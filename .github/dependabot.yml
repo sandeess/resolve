@@ -13,6 +13,9 @@ updates:
       - "internal"
       - "dependencies"
       - "github_actions"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       github-actions:
         patterns:
@@ -27,6 +30,9 @@ updates:
     commit-message:
       prefix: ⬆
     labels: [dependencies, internal]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       python-packages:
         patterns:
@@ -43,6 +49,8 @@ updates:
     labels: [dependencies, internal]
     ignore:
       - dependency-name: "@hey-api/openapi-ts"
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       npm-packages:
         patterns:
@@ -56,6 +64,9 @@ updates:
       default-days: 7
     commit-message:
       prefix: ⬆
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       docker:
         patterns:
@@ -69,6 +80,11 @@ updates:
       default-days: 7
     commit-message:
       prefix: ⬆
+    ignore:
+      # Upgrade Keycloak by hand: the theme, realm import and MCP sign-in need re-testing.
+      - dependency-name: "keycloak/keycloak"
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       docker-compose:
         patterns:
