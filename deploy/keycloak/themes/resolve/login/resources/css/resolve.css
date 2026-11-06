@@ -2,10 +2,10 @@
    Dark mode is forced in theme.properties (kcHtmlClass). No violet. */
 :root,
 .pf-v5-theme-dark {
-  --pf-v5-global--primary-color--100: #38e1ff;
-  --pf-v5-global--primary-color--200: #5eead4;
-  --pf-v5-global--link--Color: #38e1ff;
-  --pf-v5-global--link--Color--hover: #5eead4;
+  --pf-v5-global--primary-color--100: #d9b26a;
+  --pf-v5-global--primary-color--200: #e8cd94;
+  --pf-v5-global--link--Color: #d9b26a;
+  --pf-v5-global--link--Color--hover: #e8cd94;
   --pf-v5-global--Color--100: #e2e8f0;
   --pf-v5-global--Color--200: #94a3b8;
   --pf-v5-global--Color--300: #94a3b8;
@@ -17,10 +17,10 @@
 
 html.login-pf body,
 .pf-v5-c-login {
-  background-color: #04070c;
+  background-color: #070a12;
   background-image:
-    radial-gradient(50rem 30rem at 85% -10%, rgb(56 225 255 / 0.12), transparent 60%),
-    radial-gradient(40rem 26rem at -10% 90%, rgb(94 234 212 / 0.07), transparent 60%),
+    radial-gradient(50rem 30rem at 85% -10%, rgb(217 178 106 / 0.12), transparent 60%),
+    radial-gradient(40rem 26rem at -10% 90%, rgb(232 205 148 / 0.07), transparent 60%),
     linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
   background-size: auto, auto, 56px 56px, 56px 56px;
@@ -50,10 +50,10 @@ html.login-pf body,
   overflow: hidden;
 }
 
-/* The default blue strip is a border on the header: make it the accent gradient. */
+/* The default blue strip is a border on the header: make it the gold accent. */
 .pf-v5-c-login__main-header {
-  border-top: 2px solid #38e1ff;
-  border-image: linear-gradient(90deg, #38e1ff, #5eead4) 1;
+  border-top: 2px solid #d9b26a;
+  border-image: none;
 }
 
 .pf-v5-c-button.pf-m-control {
@@ -63,6 +63,7 @@ html.login-pf body,
 }
 
 .pf-v5-c-login__main-header .pf-v5-c-title {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   font-weight: 500;
   color: #fff;
 }
@@ -74,8 +75,8 @@ html.login-pf { color-scheme: dark; }
 .pf-v5-c-form-control select,
 .pf-v5-c-form-control textarea,
 input.pf-v5-c-form-control {
-  color: #f1f5f9;
-  caret-color: #38e1ff;
+  color: #f3efe6;
+  caret-color: #d9b26a;
 }
 .pf-v5-c-form-control input::placeholder,
 .pf-v5-c-form-control textarea::placeholder { color: #64748b; opacity: 1; }
@@ -83,8 +84,8 @@ input.pf-v5-c-form-control {
 .pf-v5-c-form-control input:-webkit-autofill,
 .pf-v5-c-form-control input:-webkit-autofill:hover,
 .pf-v5-c-form-control input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f1f5f9;
-  caret-color: #f1f5f9;
+  -webkit-text-fill-color: #f3efe6;
+  caret-color: #f3efe6;
   box-shadow: 0 0 0 1000px #0e141c inset;
   transition: background-color 9999s ease-in-out 0s;
 }
@@ -94,20 +95,20 @@ input.pf-v5-c-form-control {
   background: rgb(255 255 255 / 0.05);
 }
 .pf-v5-c-form-control:focus-within {
-  --pf-v5-c-form-control--after--BorderBottomColor: #38e1ff;
+  --pf-v5-c-form-control--after--BorderBottomColor: #d9b26a;
 }
 
 .pf-v5-c-button.pf-m-primary {
-  border-radius: 999px;
+  border-radius: 8px;
   min-height: 46px;
   font-weight: 600;
-  color: #04141a;
-  background: linear-gradient(100deg, #38e1ff, #5eead4);
+  color: #14100a;
+  background: #d9b26a;
   transition: box-shadow 150ms ease, transform 120ms ease;
 }
 .pf-v5-c-button.pf-m-primary:hover {
-  background: linear-gradient(100deg, #38e1ff, #5eead4);
-  box-shadow: 0 0 28px -4px rgb(56 225 255 / 0.55);
+  background: #e8c47f;
+  box-shadow: none;
 }
 .pf-v5-c-button.pf-m-primary:active {
   transform: translateY(1px);
@@ -126,8 +127,8 @@ input.pf-v5-c-form-control {
 }
 #kc-header-wrapper::before {
   content: "Resolve";
-  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
-  font-size: 30px;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-size: 32px;
   font-weight: 500;
   color: #fff;
 }
@@ -137,7 +138,7 @@ input.pf-v5-c-form-control {
   font-size: 13px;
   font-weight: 400;
   letter-spacing: 0.02em;
-  color: #5eead4;
+  color: #e8cd94;
 }
 
 /* Messages ("Invalid username or password", "Please re-authenticate"...) on the dark card. */
@@ -150,15 +151,15 @@ input.pf-v5-c-form-control {
 }
 .pf-v5-c-alert.pf-m-inline .pf-v5-c-alert__title,
 .pf-v5-c-alert.pf-m-inline .pf-v5-c-alert__description { color: #e2e8f0; }
-.pf-v5-c-alert.pf-m-inline.pf-m-info { border-left-color: #38e1ff; }
-.pf-v5-c-alert.pf-m-inline.pf-m-success { border-left-color: #5eead4; background: rgb(94 234 212 / 0.08); }
+.pf-v5-c-alert.pf-m-inline.pf-m-info { border-left-color: #d9b26a; }
+.pf-v5-c-alert.pf-m-inline.pf-m-success { border-left-color: #e8cd94; background: rgb(232 205 148 / 0.08); }
 .pf-v5-c-alert.pf-m-inline.pf-m-warning { border-left-color: #f59e0b; background: rgb(245 158 11 / 0.1); }
 .pf-v5-c-alert.pf-m-inline.pf-m-danger { border-left-color: #fb7185; background: rgb(251 113 133 / 0.12); }
 .pf-v5-c-alert.pf-m-inline.pf-m-danger .pf-v5-c-alert__title { color: #fecdd3; }
-.pf-v5-c-alert__icon { color: #38e1ff; }
+.pf-v5-c-alert__icon { color: #d9b26a; }
 .pf-m-danger .pf-v5-c-alert__icon { color: #fb7185; }
 .pf-m-warning .pf-v5-c-alert__icon { color: #f59e0b; }
-.pf-m-success .pf-v5-c-alert__icon { color: #5eead4; }
+.pf-m-success .pf-v5-c-alert__icon { color: #e8cd94; }
 .pf-v5-c-helper-text__item.pf-m-error .pf-v5-c-helper-text__item-text,
 .kc-feedback-text.pf-m-error { color: #fecdd3; }
 

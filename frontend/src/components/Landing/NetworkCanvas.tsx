@@ -17,9 +17,9 @@ interface Pulse {
   t: number
 }
 
-const CYAN = "56, 225, 255"
-const MINT = "94, 234, 212"
-const AMBER = "245, 158, 11"
+const CYAN = "217, 178, 106"
+const MINT = "240, 215, 154"
+const AMBER = "148, 163, 184"
 
 /** Small deterministic PRNG so the layout is identical on every load. */
 function mulberry32(seed: number) {
@@ -179,7 +179,7 @@ export function NetworkCanvas({ className }: { className?: string }) {
       }
       ctx.beginPath()
       ctx.arc(h.x, h.y, 18, 0, Math.PI * 2)
-      ctx.fillStyle = "rgba(4, 7, 12, 0.9)"
+      ctx.fillStyle = "rgba(7, 10, 18, 0.9)"
       ctx.fill()
       ctx.strokeStyle = `rgba(${CYAN}, 1)`
       ctx.lineWidth = 1.6

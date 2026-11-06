@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>sortitout: AI tools for scholarly publishing</title>
+<meta name="description" content="sortitout is where Santhosh Kumar S builds AI and document tools for scholarly publishing. First product: Resolve, editorial answers that cite their sources.">
+<meta name="theme-color" content="#070a12">
+<link rel="canonical" href="https://sortitouthq.com/">
+<meta property="og:title" content="sortitout: AI tools for scholarly publishing">
+<meta property="og:description" content="First product: Resolve, editorial answers cited and current, from each journal's latest rules.">
+<meta property="og:url" content="https://sortitouthq.com/">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23d9b26a'/%3E%3Cpath d='m9 16.5 4.5 4.5L23 11' fill='none' stroke='%2314100a' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #070a12;
+    --panel: #0a0e18;
+    --ink: #f3efe6;
+    --text: #cfc9bb;
+    --muted: #98a2b3;
+    --gold: #d9b26a;
+    --gold-hi: #e8c47f;
+    --line: rgba(243, 239, 230, 0.12);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --wrap: min(1120px, 100% - 48px);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image: radial-gradient(60rem 34rem at 78% -8%, rgba(217, 178, 106, 0.09), transparent 62%);
+    color: var(--text);
+    font: 400 17px/1.65 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  .skip { position: absolute; left: 12px; top: -48px; background: #fff; color: #000; padding: 10px 14px; border-radius: 6px; z-index: 10; }
+  .skip:focus { top: 12px; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+  .wrap { width: var(--wrap); margin-inline: auto; }
+
+  header { padding: 22px 0; }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 12px; font: 500 19px/1 var(--serif); color: var(--ink); text-decoration: none; }
+  .brand i { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: var(--gold); }
+  .brand svg { width: 18px; height: 18px; }
+  nav { display: flex; align-items: center; gap: 4px; }
+  nav a { padding: 12px 14px; font-size: 15px; color: var(--text); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+  nav a:hover { color: #fff; }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 26px; border-radius: 8px; font: 600 16px/1 var(--sans); text-decoration: none; transition: transform .12s ease, background-color .15s ease, border-color .15s ease; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--gold); color: #14100a; }
+  .btn-primary:hover { background: var(--gold-hi); }
+  .btn-ghost { border: 1px solid rgba(243, 239, 230, 0.22); color: var(--ink); }
+  .btn-ghost:hover { background: rgba(243, 239, 230, 0.06); border-color: rgba(243, 239, 230, 0.4); }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  .eyebrow { margin: 0 0 20px; font-size: 14px; font-weight: 500; color: var(--gold); }
+  h1, h2, h3 { margin: 0; font-family: var(--serif); font-weight: 400; letter-spacing: -0.015em; color: var(--ink); line-height: 1.08; }
+  h1 { font-size: clamp(2.5rem, 6.4vw, 4.75rem); }
+  h1 em { font-style: normal; color: var(--gold); }
+  h2 { font-size: clamp(1.9rem, 3.6vw, 2.6rem); line-height: 1.15; }
+  h3 { font-size: 1.5rem; line-height: 1.2; }
+  .lead { max-width: 38rem; margin: 26px 0 0; font-size: 1.2rem; line-height: 1.6; }
+
+  .hero { padding: clamp(48px, 9vw, 112px) 0 clamp(56px, 9vw, 104px); }
+  .facts { display: grid; gap: 1px; margin-top: clamp(48px, 7vw, 80px); overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--line); grid-template-columns: repeat(4, 1fr); }
+  .facts div { background: var(--panel); padding: 24px 26px; }
+  .facts b { display: block; font: 400 clamp(2rem, 4vw, 2.75rem)/1.1 var(--serif); color: var(--gold); }
+  .facts span { display: block; margin-top: 8px; font-size: 15px; line-height: 1.5; }
+  .note { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+
+  section { padding: clamp(56px, 8vw, 96px) 0; }
+  .band { border-block: 1px solid var(--line); background: rgba(243, 239, 230, 0.02); }
+
+  .product { display: grid; gap: 40px; margin-top: 40px; padding: clamp(28px, 4vw, 48px); border: 1px solid var(--line); border-radius: 16px; background: rgba(243, 239, 230, 0.03); grid-template-columns: 1.15fr 0.85fr; align-items: center; transition: border-color .15s ease, transform .15s ease; }
+  .product:hover { border-color: rgba(217, 178, 106, 0.45); transform: translateY(-2px); }
+  .tag { display: inline-block; margin-bottom: 16px; padding: 4px 12px; border: 1px solid rgba(217, 178, 106, 0.4); border-radius: 999px; font-size: 14px; color: var(--gold); }
+  .product p { margin: 16px 0 28px; max-width: 34rem; }
+  .points { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+  .points li { padding-left: 28px; position: relative; font-size: 16px; line-height: 1.55; }
+  .points li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 14px; height: 8px; border-left: 2px solid var(--gold); border-bottom: 2px solid var(--gold); transform: rotate(-45deg) translateY(-3px); }
+  .next { margin-top: 20px; padding: 22px 28px; border: 1px dashed var(--line); border-radius: 16px; color: var(--muted); font-size: 16px; }
+
+  .cols { display: grid; gap: 48px; grid-template-columns: 1fr 1fr; margin-top: 40px; }
+  .cols p { margin: 0 0 16px; }
+  dl { margin: 0; display: grid; gap: 18px; }
+  dt { font-size: 14px; font-weight: 500; color: var(--gold); }
+  dd { margin: 4px 0 0; font-size: 16px; line-height: 1.55; }
+
+  .contact { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  footer { padding: 36px 0 56px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; }
+  footer a { text-decoration: none; border-bottom: 1px solid var(--line); }
+  footer a:hover { color: #fff; }
+
+  @media (max-width: 860px) {
+    .facts { grid-template-columns: 1fr 1fr; }
+    .product, .cols { grid-template-columns: 1fr; gap: 32px; }
+  }
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    .facts { grid-template-columns: 1fr; }
+    nav a.hide-sm { display: none; }
+    .btn { width: 100%; justify-content: center; }
+    .btn-row, .contact { flex-direction: column; }
+    header .btn { width: auto; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="sortitout home">
+      <i><svg viewBox="0 0 24 24" fill="none" stroke="#14100a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></i>
+      sortitout
+    </a>
+    <nav aria-label="Main">
+      <a class="hide-sm" href="#products">Products</a>
+      <a class="hide-sm" href="#about">About</a>
+      <a class="hide-sm" href="#contact">Contact</a>
+      <a class="btn btn-primary" href="https://app.sortitouthq.com/" style="min-height:44px;padding:0 20px;font-size:15px">Open Resolve</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" style="padding-bottom:0">
+    <div class="wrap">
+      <p class="eyebrow">AI and document tools for scholarly publishing</p>
+      <h1>Every editorial answer, <em>cited and current.</em></h1>
+      <p class="lead">I build tools that give publishing offices answers they can trust: taken only from the latest rules, with the source shown, and silent when the sources do not know.</p>
+      <div class="btn-row" style="margin-top:36px">
+        <a class="btn btn-primary" href="https://app.sortitouthq.com/">Try Resolve &rarr;</a>
+        <a class="btn btn-ghost" href="#about">About me</a>
+      </div>
+
+      <div class="facts" role="list">
+        <div role="listitem"><b>95.8%</b><span>of 168 trap questions answered correctly</span></div>
+        <div role="listitem"><b>0</b><span>stale or wrong-journal answers in that run</span></div>
+        <div role="listitem"><b>100%</b><span>of unanswerable questions refused, not guessed</span></div>
+        <div role="listitem"><b>1-2 s</b><span>typical time to a cited answer</span></div>
+      </div>
+      <p class="note">Measured with Resolve's own evaluation harness on a synthetic publishing corpus. Method and limits are in the repository.</p>
+    </div>
+  </section>
+
+  <section id="products">
+    <div class="wrap">
+      <p class="eyebrow">Products</p>
+      <h2>First product: Resolve.</h2>
+
+      <article class="product">
+        <div>
+          <span class="tag">Live &middot; early</span>
+          <h3>Resolve</h3>
+          <p>A knowledge base for publishing offices. Ask a question and get an answer with citations, taken only from each journal's latest stylesheet and from ticket answers a lead has approved.</p>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="https://app.sortitouthq.com/">Open Resolve &rarr;</a>
+            <a class="btn btn-ghost" href="https://github.com/sandeess/resolve" rel="noopener">Read the code</a>
+          </div>
+        </div>
+        <ul class="points">
+          <li>A revised stylesheet retires the old one, so superseded rules cannot be quoted.</li>
+          <li>One journal's rules never appear in another's, enforced in the database.</li>
+          <li>When the sources do not answer, it says so and offers a ticket.</li>
+          <li>Works inside AI tools such as Claude through an MCP server with real sign-in.</li>
+        </ul>
+      </article>
+
+      <div class="next">More tools for publishing workflows are on the way. Each one gets its own address and a card here.</div>
+    </div>
+  </section>
+
+  <section id="about" class="band">
+    <div class="wrap">
+      <p class="eyebrow">About</p>
+      <h2>I find the slow step and fix it.</h2>
+      <div class="cols">
+        <div>
+          <p>I'm Santhosh Kumar S, a software developer with three years of production experience building AI and document-intelligence systems for scholarly publishing workflows, after two years in industrial IoT.</p>
+          <p>My habit: find the step everyone has accepted as slow, and replace it with something that works. I have led small engineering teams and taken systems from a first idea to real users.</p>
+          <p>I have a day job. sortitout is separate: my own projects, my own time, my own code and data. It is not a registered company and it speaks only for me. It is the company I'd like to build one day.</p>
+        </div>
+        <dl>
+          <div><dt>Build</dt><dd>Python, FastAPI, Node.js, React, Postgres, Docker</dd></div>
+          <div><dt>AI</dt><dd>LLM deployment (serverless APIs, cloud and self-hosted), retrieval, evaluation</dd></div>
+          <div><dt>Documents</dt><dd>PDF layout and reference extraction, OCR, structured XML, citation checks</dd></div>
+          <div><dt>Principle</dt><dd>If a tool claims it is accurate, show the test, not the adjective.</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <p class="eyebrow">Contact</p>
+      <h2>Something slow in publishing? Tell me about it.</h2>
+      <div class="contact">
+        <a class="btn btn-primary" href="mailto:santhoshsiva018@gmail.com">Email me</a>
+        <a class="btn btn-ghost" href="https://linkedin.com/in/santhosh-siva" rel="noopener">LinkedIn</a>
+        <a class="btn btn-ghost" href="https://github.com/sandeess" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; 2026 Santhosh Kumar S. sortitout is my personal project name, built in my own time; not affiliated with any employer.</span>
+    <a href="https://app.sortitouthq.com/">Resolve</a>
+  </div>
+</footer>
+</body>
+</html>

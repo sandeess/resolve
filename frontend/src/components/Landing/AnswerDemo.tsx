@@ -82,7 +82,7 @@ export function AnswerDemo() {
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <span className="flex items-center gap-2 font-mono text-xs tracking-wide text-cyan-200/80 uppercase">
+        <span className="flex items-center gap-2 font-mono text-xs tracking-wide text-[#e8cd94] uppercase">
           <Sparkles className="size-3.5" /> Example
         </span>
         {!reduced && (
@@ -103,7 +103,7 @@ export function AnswerDemo() {
 
       <div className="min-h-[15.5rem] space-y-4 p-5">
         <p className="font-mono text-[0.95rem] leading-relaxed text-slate-100">
-          <span className="text-cyan-300">&gt; </span>
+          <span className="text-[#d9b26a]">&gt; </span>
           {question}
           {phase === "question" && (
             <span className="landing-caret" aria-hidden="true" />
@@ -124,14 +124,14 @@ export function AnswerDemo() {
             <p
               className={
                 example.abstains
-                  ? "text-[0.95rem] leading-relaxed text-amber-200"
+                  ? "text-[0.95rem] leading-relaxed text-slate-300"
                   : "text-[0.95rem] leading-relaxed text-white"
               }
             >
               {example.answer}
             </p>
             {example.abstains ? (
-              <span className="inline-flex rounded-full border border-amber-300/40 px-3 py-1 text-xs text-amber-200">
+              <span className="inline-flex rounded-full border border-[#d9b26a]/40 px-3 py-1 text-xs text-slate-300">
                 Raise a ticket
               </span>
             ) : (
@@ -141,7 +141,7 @@ export function AnswerDemo() {
                     key={source}
                     className="flex items-start gap-2 font-mono text-xs text-slate-400"
                   >
-                    <span className="mt-px rounded bg-cyan-300/15 px-1.5 text-cyan-200">
+                    <span className="mt-px rounded bg-[#d9b26a]/15 px-1.5 text-[#e8cd94]">
                       {i + 1}
                     </span>
                     {source}

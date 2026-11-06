@@ -10,10 +10,10 @@ export function LogoMark({ className }: { className?: string }) {
       aria-hidden="true"
       className={cn("size-8 shrink-0", className)}
     >
-      <rect width="32" height="32" rx="9" className="fill-primary" />
+      <rect width="32" height="32" rx="9" fill="#d9b26a" />
       <path
         d="M9 10.5A2.5 2.5 0 0 1 11.5 8h9A2.5 2.5 0 0 1 23 10.5v6a2.5 2.5 0 0 1-2.5 2.5H15l-3.6 3.2c-.5.4-1.4.1-1.4-.6V19h-.5A.5.5 0 0 1 9 18.5v-8Z"
-        className="fill-primary-foreground"
+        fill="#14100a"
       />
       <path
         d="m12.6 13.9 2.2 2.2 4.1-4.2"
@@ -21,7 +21,7 @@ export function LogoMark({ className }: { className?: string }) {
         strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="stroke-primary"
+        stroke="#d9b26a"
       />
     </svg>
   )
