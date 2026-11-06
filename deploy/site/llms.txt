@@ -1,0 +1,24 @@
+# sortitout: Santhosh Kumar S
+
+> Santhosh Kumar S is a software developer in India who builds AI and document tools for scholarly publishing. sortitout is his personal project name: his own lab, built in his own time. It is not a registered company and not affiliated with any employer. First product: Resolve.
+
+## About
+- Software developer: 3 years of production experience building AI and document-intelligence systems for scholarly publishing workflows, after 2 years in industrial IoT.
+- Works with Python, FastAPI, Node.js, React, Postgres and Docker; LLM deployment (serverless APIs, cloud and self-hosted), retrieval and evaluation; PDF layout and reference extraction, OCR, structured XML and citation checks.
+- Education: MCA, MGR University (2023); B.Sc. Electronics & Communication, Periyar University (2019).
+
+## Product: Resolve
+- A knowledge base for publishing offices. It answers questions with citations, using only each journal's latest stylesheet and ticket answers a lead has approved, and says so when it does not know.
+- A revised stylesheet retires the previous version; one journal's rules never appear in another's (enforced in the database).
+- Evaluated on 168 trap questions over synthetic data: 95.8% correct, no stale or wrong-journal answers.
+- Has an MCP server with OAuth sign-in so AI tools such as Claude can use it with the signed-in person's access.
+- Independent project, synthetic data only; no employer code or data. Accounts are by request.
+- App: https://app.sortitouthq.com
+- Source (MIT): https://github.com/sandeess/resolve
+- Architecture and design notes: https://github.com/sandeess/resolve/blob/main/docs/engineering.md
+- Privacy and data retention: https://github.com/sandeess/resolve/blob/main/docs/privacy-and-zdr.md
+
+## Contact
+- Email: santhoshsiva018@gmail.com
+- LinkedIn: https://linkedin.com/in/santhosh-siva
+- GitHub: https://github.com/sandeess

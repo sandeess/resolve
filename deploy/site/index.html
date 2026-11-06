@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Santhosh Kumar S | AI tools for scholarly publishing</title>
+  <meta name="description" content="Software developer building AI and document tools for scholarly publishing. First product: Resolve, cited answers from a journal's latest stylesheet." />
+  <meta name="author" content="Santhosh Kumar S" />
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1" />
+  <meta name="theme-color" content="#04070c" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://sortitouthq.com/" />
+  <link rel="alternate" type="text/plain" href="/llms.txt" title="Plain-text summary for AI agents" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="sortitout" />
+  <meta property="og:title" content="Scholarly publishing, sorted. | Santhosh Kumar S" />
+  <meta property="og:description" content="AI and document tools for scholarly publishing, built on my own time. First product: Resolve, answers that cite their sources." />
+  <meta property="og:url" content="https://sortitouthq.com/" />
+  <meta property="og:image" content="https://sortitouthq.com/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Scholarly publishing, sorted. sortitout by Santhosh Kumar S." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Scholarly publishing, sorted. | Santhosh Kumar S" />
+  <meta name="twitter:description" content="AI and document tools for scholarly publishing. First product: Resolve." />
+  <meta name="twitter:image" content="https://sortitouthq.com/og.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://sortitouthq.com/#me",
+        "name": "Santhosh Kumar S",
+        "url": "https://sortitouthq.com/",
+        "image": "https://sortitouthq.com/og.png",
+        "jobTitle": "Software Developer",
+        "description": "Software developer building AI and document-intelligence tools for scholarly publishing.",
+        "knowsAbout": ["Scholarly publishing", "Document intelligence", "Retrieval-augmented generation", "Large language models", "Reference extraction", "Python", "FastAPI", "React"],
+        "alumniOf": [
+          { "@type": "CollegeOrUniversity", "name": "MGR University" },
+          { "@type": "CollegeOrUniversity", "name": "Periyar University" }
+        ],
+        "sameAs": ["https://linkedin.com/in/santhosh-siva", "https://github.com/sandeess"]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://sortitouthq.com/#website",
+        "name": "sortitout",
+        "url": "https://sortitouthq.com/",
+        "description": "A developer's own lab for AI and document tools for scholarly publishing.",
+        "inLanguage": "en",
+        "author": { "@id": "https://sortitouthq.com/#me" }
+      },
+      {
+        "@type": "ProfilePage",
+        "@id": "https://sortitouthq.com/#page",
+        "url": "https://sortitouthq.com/",
+        "name": "Santhosh Kumar S | AI tools for scholarly publishing",
+        "isPartOf": { "@id": "https://sortitouthq.com/#website" },
+        "mainEntity": { "@id": "https://sortitouthq.com/#me" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://sortitouthq.com/#resolve",
+        "name": "Resolve",
+        "url": "https://app.sortitouthq.com/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "A knowledge base for publishing offices. It answers questions with citations, using only each journal's latest stylesheet and ticket answers a lead has approved, and says so when it does not know.",
+        "codeRepository": "https://github.com/sandeess/resolve",
+        "license": "https://opensource.org/license/mit",
+        "author": { "@id": "https://sortitouthq.com/#me" }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #04070c;
+      --panel: rgb(255 255 255 / 0.035);
+      --line: rgb(255 255 255 / 0.1);
+      --ink: #e8edf5;
+      --soft: #cbd5e1;
+      --muted: #94a3b8;
+      --cyan: #38e1ff;
+      --mint: #5eead4;
+      --amber: #f59e0b;
+      --sans: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", sans-serif;
+      --mono: ui-monospace, "JetBrains Mono", "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { color-scheme: dark; scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 400 1.0625rem/1.65 var(--sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    }
+    body::before { /* ground: glow + grid, fixed behind everything */
+      content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background-image:
+        radial-gradient(52rem 30rem at 88% -8%, rgb(56 225 255 / .11), transparent 60%),
+        radial-gradient(40rem 26rem at -8% 62%, rgb(94 234 212 / .06), transparent 60%),
+        linear-gradient(rgb(255 255 255 / .03) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(255 255 255 / .03) 1px, transparent 1px);
+      background-size: auto, auto, 56px 56px, 56px 56px;
+    }
+    a { color: inherit; }
+    p { margin: 0; }
+    :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
+    .wrap { width: min(100% - 2.5rem, 62rem); margin-inline: auto; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .skip { position: absolute; left: -999px; }
+    .skip:focus { left: 1rem; top: 1rem; z-index: 99; background: #fff; color: #000; padding: .55rem .8rem; border-radius: 8px; }
+
+    /* Fixed navigation */
+    .top {
+      position: fixed; inset: 0 0 auto 0; z-index: 20; height: 3.75rem;
+      background: rgb(4 7 12 / .72); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line);
+    }
+    .top .wrap { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .mark { font: 650 1.12rem/1 var(--sans); letter-spacing: -.01em; text-decoration: none; }
+    .mark b { color: var(--cyan); font-weight: 650; }
+    .top nav { display: flex; align-items: center; gap: 1.5rem; font-size: .94rem; }
+    .top nav a { color: var(--muted); text-decoration: none; transition: color .15s; }
+    .top nav a:hover { color: #fff; }
+    .top nav .btn { height: 2.3rem; padding: 0 1rem; font-size: .88rem; color: #04141a; }
+    @media (max-width: 40rem) { .top nav a:not(.btn) { display: none; } }
+
+    .eyebrow { font: 500 .76rem/1.3 var(--mono); letter-spacing: .17em; text-transform: uppercase; color: var(--cyan); }
+    h1 { font: 720 clamp(2.7rem, 8.2vw, 5.4rem)/1.0 var(--sans); letter-spacing: -.035em; margin: 1.1rem 0 0; text-wrap: balance; }
+    h1 em { font-style: normal; background: linear-gradient(100deg, var(--cyan), var(--mint)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    h2 { font: 680 clamp(1.7rem, 4.4vw, 2.5rem)/1.12 var(--sans); letter-spacing: -.025em; margin: .8rem 0 0; text-wrap: balance; max-width: 28ch; }
+    h3 { font: 620 1.1rem/1.3 var(--sans); margin: 0; }
+    .lead { max-width: 37rem; margin-top: 1.6rem; font-size: clamp(1.08rem, 2.2vw, 1.28rem); color: var(--soft); }
+    .proof { margin-top: 1.3rem; font: 450 .84rem/1.5 var(--mono); color: var(--muted); max-width: 36rem; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem; height: 3rem; padding: 0 1.45rem;
+      border-radius: 999px; font: 520 .95rem/1 var(--sans); text-decoration: none; cursor: pointer;
+      border: 1px solid rgb(255 255 255 / .18); color: var(--ink); background: transparent;
+      transition: transform .12s, background-color .15s, border-color .15s, box-shadow .15s;
+    }
+    .btn:hover { background: rgb(255 255 255 / .07); border-color: rgb(255 255 255 / .3); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: linear-gradient(100deg, var(--cyan), var(--mint)); border-color: transparent; color: #04141a; font-weight: 640; }
+    .btn.primary:hover { box-shadow: 0 0 34px -4px rgb(56 225 255 / .55); }
+    .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2.1rem; }
+    @media (max-width: 30rem) { .actions .btn { flex: 1 1 100%; } }
+
+    /* Hero: text left, sorting canvas right */
+    .hero { position: relative; min-height: 100svh; display: flex; align-items: center; padding: 6rem 0 4rem; overflow: hidden; }
+    .hero .wrap { position: relative; z-index: 1; }
+    .hero .copy { max-width: 36rem; }
+    #sort {
+      position: absolute; top: 0; right: 0; width: 100%; height: 100%; z-index: 0;
+      opacity: .22; -webkit-mask-image: linear-gradient(to right, transparent 0, #000 42%); mask-image: linear-gradient(to right, transparent 0, #000 42%);
+    }
+    @media (min-width: 64rem) { #sort { width: 66%; opacity: 1; } }
+    .again {
+      position: absolute; right: max(1.25rem, calc((100vw - 62rem) / 2)); bottom: 2rem; z-index: 2;
+      font: 500 .8rem/1 var(--mono); color: var(--muted); background: none; border: 0; padding: .6rem .2rem; cursor: pointer;
+      background-image: linear-gradient(currentColor, currentColor); background-size: 0 1px; background-position: 0 100%; background-repeat: no-repeat;
+      transition: color .15s, background-size .2s;
+    }
+    .again:hover { color: #fff; background-size: 100% 1px; }
+    .again[hidden] { display: none; }
+
+    /* Statement (text moment) */
+    .statement { padding: clamp(4rem, 12vh, 8rem) 0; border-top: 1px solid var(--line); }
+    .statement p { font: 650 clamp(1.9rem, 5.6vw, 3.6rem)/1.14 var(--sans); letter-spacing: -.03em; max-width: 22ch; text-wrap: balance; }
+    .statement p .vis { font-variant-numeric: tabular-nums; }
+
+    section { border-top: 1px solid var(--line); padding: clamp(4rem, 11vh, 7rem) 0; }
+    .two { display: grid; gap: 2.5rem; grid-template-columns: 1fr; margin-top: 2.2rem; }
+    @media (min-width: 54rem) { .two { grid-template-columns: 1.15fr .85fr; align-items: start; } }
+    .prose p + p { margin-top: 1.15rem; }
+    .prose p { color: var(--soft); max-width: 40rem; }
+
+    .card {
+      border: 1px solid var(--line); border-radius: 1.25rem; background: var(--panel); backdrop-filter: blur(12px); padding: 1.6rem;
+      box-shadow: 0 1px 0 rgb(255 255 255 / .05) inset, 0 24px 60px -34px #000;
+    }
+    .lift { transition: transform .15s, border-color .15s; }
+    .lift:hover { transform: translateY(-2px); border-color: rgb(56 225 255 / .35); }
+
+    dl { margin: 0; }
+    dl.stack { display: grid; gap: 1.15rem; }
+    dl.stack dt { font: 500 .73rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); }
+    dl.stack dd { margin: .45rem 0 0; color: var(--soft); font-size: .97rem; line-height: 1.55; }
+
+    .product { margin-top: 2.2rem; padding: clamp(1.5rem, 4vw, 2.4rem); position: relative; overflow: hidden; }
+    .product::after { content: ""; position: absolute; inset: -40% -10% auto auto; width: 30rem; height: 20rem; pointer-events: none;
+      background: radial-gradient(closest-side, rgb(56 225 255 / .14), transparent); }
+    .tag { display: inline-block; font: 500 .72rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+      padding: .42rem .7rem; border: 1px solid rgb(94 234 212 / .4); border-radius: 999px; color: var(--mint); }
+    .product h3 { font-size: clamp(1.4rem, 3vw, 1.8rem); margin-top: 1.1rem; letter-spacing: -.02em; }
+    .product .tagline { margin-top: .7rem; max-width: 38rem; color: var(--soft); font-size: 1.1rem; }
+    .facts { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; gap: .75rem; max-width: 40rem; }
+    .facts li { position: relative; padding-left: 1.6rem; color: var(--soft); }
+    .facts li::before { content: ""; position: absolute; left: 0; top: .72em; width: .72rem; height: 2px; background: var(--cyan); }
+    .fine { margin-top: 1.5rem; font-size: .88rem; color: var(--muted); max-width: 40rem; }
+
+    .grid3 { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 2.2rem; }
+    @media (min-width: 48rem) { .grid3 { grid-template-columns: repeat(3, 1fr); } }
+    .grid3 p { margin-top: .6rem; color: var(--muted); font-size: .97rem; line-height: 1.6; }
+
+    .closing { min-height: 86svh; display: flex; flex-direction: column; justify-content: space-between; padding-bottom: 0; }
+    address { font-style: normal; }
+    .links { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+    footer { margin-top: 5rem; border-top: 1px solid var(--line); padding: 1.8rem 0 2.4rem; color: #7b8aa0; font-size: .88rem; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .lift, .btn, .again { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="wrap">
+      <a class="mark" href="/" aria-label="sortitout, home">sort<b>it</b>out</a>
+      <nav aria-label="Sections">
+        <a href="#about">About</a>
+        <a href="#resolve">Resolve</a>
+        <a href="#contact">Contact</a>
+        <a class="btn primary" href="https://app.sortitouthq.com">Try Resolve</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="top-title" style="border-top:0;padding-top:6rem">
+      <canvas id="sort" aria-hidden="true"></canvas>
+      <div class="wrap">
+        <div class="copy">
+          <p class="eyebrow">Santhosh Kumar S · Software developer · India</p>
+          <h1 id="top-title">Scholarly publishing, <em>sorted.</em></h1>
+          <p class="lead">
+            I build AI and document tools for scholarly publishing: manuscript checks, reference extraction, and answers
+            that cite their sources. sortitout is where I build them, on my own time.
+          </p>
+          <p class="proof">3 years shipping production AI and document systems for publishing teams.</p>
+          <div class="actions">
+            <a class="btn primary" href="https://app.sortitouthq.com">Try Resolve</a>
+            <a class="btn" href="#about">About me</a>
+            <a class="btn" href="https://github.com/sandeess" rel="me noopener">GitHub</a>
+          </div>
+        </div>
+      </div>
+      <button class="again" id="again" type="button" hidden>↻ sort it again</button>
+    </section>
+
+    <div class="statement">
+      <div class="wrap">
+        <p data-decode>Every publishing office has one person who knows. Resolve makes it everyone.</p>
+      </div>
+    </div>
+
+    <section id="about" aria-labelledby="about-title">
+      <div class="wrap">
+        <p class="eyebrow">About me</p>
+        <h2 id="about-title">I find the slow step and fix it.</h2>
+        <div class="two">
+          <div class="prose">
+            <p>
+              I'm a software developer with three years of production experience building AI and document-intelligence
+              systems for scholarly publishing workflows, after two years in industrial IoT. My habit: find the step
+              everyone has accepted as slow, and replace it with something that works.
+            </p>
+            <p>
+              I've led small engineering teams and taken systems from a first idea to real users. What I learned: tests,
+              costs and hand-offs decide whether a tool lasts.
+            </p>
+            <p>
+              I have a day job. sortitout is separate: my own projects, my own time, my own code and data. It isn't a
+              registered company and it speaks only for me. It is the company I'd like to build one day.
+            </p>
+          </div>
+          <div class="card">
+            <dl class="stack">
+              <div><dt>Build</dt><dd>Python, FastAPI, Node.js, React, Postgres, Docker</dd></div>
+              <div><dt>AI</dt><dd>LLM deployment (serverless APIs, cloud and self-hosted), retrieval, evaluation</dd></div>
+              <div><dt>Documents</dt><dd>PDF layout and reference extraction, OCR, structured XML, citation checks</dd></div>
+              <div><dt>Education</dt><dd>MCA, MGR University (2023) · B.Sc. Electronics &amp; Communication, Periyar University (2019)</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="resolve" aria-labelledby="resolve-title">
+      <div class="wrap">
+        <p class="eyebrow">First product</p>
+        <h2 id="resolve-title">Resolve: answers that cite their sources.</h2>
+        <article class="card product lift">
+          <span class="tag">Early · built solo</span>
+          <h3>A knowledge base for publishing offices.</h3>
+          <p class="tagline">
+            Ask a question, get an answer with citations, taken only from each journal's latest stylesheet and from
+            ticket answers a lead has approved. When it doesn't know, it says so and offers to raise a ticket.
+          </p>
+          <ul class="facts">
+            <li>A revised stylesheet retires the old one, so superseded rules can't be quoted.</li>
+            <li>One journal's rules never appear in another's, enforced in the database.</li>
+            <li>168 trap questions on synthetic data: 95.8% correct, with no stale or wrong-journal answers.</li>
+            <li>Works inside AI tools such as Claude through an MCP server with real sign-in.</li>
+          </ul>
+          <div class="actions">
+            <a class="btn primary" href="https://app.sortitouthq.com">Open Resolve</a>
+            <a class="btn" href="https://github.com/sandeess/resolve" rel="noopener">Read the code</a>
+            <a class="btn" href="https://github.com/sandeess/resolve/blob/main/docs/engineering.md" rel="noopener">How it works</a>
+          </div>
+          <p class="fine">
+            Resolve is an independent project, written in my own time. It uses synthetic data only: no employer code,
+            documents or data are involved. Accounts are by request; the sign-in page has a short form.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="how-title">
+      <div class="wrap">
+        <p class="eyebrow">How I build</p>
+        <h2 id="how-title">Boring where it should be, careful where it counts.</h2>
+        <div class="grid3">
+          <div class="card lift"><h3>Measure it</h3><p>If a tool claims it's accurate, I'd rather show the test than the adjective. Resolve ships its own evaluation harness, results included.</p></div>
+          <div class="card lift"><h3>Keep it boring</h3><p>One Postgres, a plain API, standard sign-in. Fewer moving parts means fewer 2 a.m. surprises for whoever runs it.</p></div>
+          <div class="card lift"><h3>Respect the data</h3><p>Manuscripts are unpublished work. Documents stay on your own server, and the AI sees only what a question needs.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="closing" aria-labelledby="contact-title">
+      <div class="wrap">
+        <p class="eyebrow">Contact</p>
+        <h2 id="contact-title">Something slow in publishing? Tell me about it.</h2>
+        <address class="links">
+          <a class="btn primary" href="mailto:santhoshsiva018@gmail.com">santhoshsiva018@gmail.com</a>
+          <a class="btn" href="https://linkedin.com/in/santhosh-siva" rel="me noopener">LinkedIn</a>
+          <a class="btn" href="https://github.com/sandeess" rel="me noopener">GitHub</a>
+        </address>
+      </div>
+      <footer>
+        <div class="wrap">
+          © 2026 Santhosh Kumar S. sortitout is my personal project name, built in my own time; not affiliated with any employer.
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+  (() => {
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const narrow = matchMedia("(max-width: 640px)").matches;
+
+    /* ---------- Hero effect: scattered fragments sort themselves into clean rows ---------- */
+    const canvas = document.getElementById("sort");
+    const again = document.getElementById("again");
+    if (canvas && canvas.getContext) {
+      const ctx = canvas.getContext("2d");
+      const still = reduced || narrow; // static, finished picture
+      const CYAN = "56,225,255", MINT = "94,234,212", AMBER = "245,158,11";
+      let W = 0, H = 0, dpr = 1, tokens = [], raf = 0, visible = true, start = 0, pointer = null;
+
+      const rng = (seed) => () => {
+        seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      let seedBase = 7;
+
+      function build() {
+        const r = rng(seedBase);
+        const s = Math.max(0.8, Math.min(1.5, W / 760));
+        const rowH = 22 * s, gap = 10 * s;
+        const left = W * 0.3, right = W - Math.max(70, W * 0.16);
+        const top = H * 0.17;
+        const rows = Math.floor((H * 0.66) / rowH);
+        tokens = [];
+        let x = left, row = 0;
+        const total = rows * 5;
+        for (let i = 0; i < total && row < rows; i++) {
+          const w = [34, 48, 64, 82, 104][Math.floor(r() * 5)] * s;
+          const retired = r() < 0.16;
+          tokens.push({ w, h: 7 * s, retired, mint: r() < 0.22,
+            cx: r() * W, cy: r() * H, rot: (r() - 0.5) * 2.4,
+            delay: r() * 0.9, tx: 0, ty: 0, ox: 0, oy: 0, vx: 0, vy: 0 });
+        }
+        // targets: current fragments flow into aligned rows, retired ones stack dim at the far right
+        let rx = left, ry = top, rcol = 0, rrow = 0;
+        for (const t of tokens) {
+          if (t.retired) {
+            t.tx = W - Math.max(40, W * 0.07) - (rcol % 2) * 52 * s;
+            t.ty = top + rrow * 34 * s; rrow++; if (rrow * 34 * s > H * 0.6) { rrow = 0; rcol++; }
+            continue;
+          }
+          if (rx + t.w > right) { rx = left; ry += rowH; }
+          t.tx = rx; t.ty = ry; rx += t.w + gap;
+        }
+      }
+
+      const ease = (p) => 1 - Math.pow(1 - p, 3);
+
+      function draw(now) {
+        ctx.clearRect(0, 0, W, H);
+        const elapsed = still ? 99 : (now - start) / 1000;
+        let moving = false;
+        for (const t of tokens) {
+          const p = Math.min(1, Math.max(0, (elapsed - t.delay) / 1.7));
+          const e = ease(p);
+          if (p < 1) moving = true;
+          let x = t.cx + (t.tx - t.cx) * e + t.ox;
+          let y = t.cy + (t.ty - t.cy) * e + t.oy;
+          const rot = t.rot * (1 - e);
+          // pointer push, then a spring back to the sorted place
+          if (pointer && p >= 1) {
+            const dx = x - pointer.x, dy = y - pointer.y, d = Math.hypot(dx, dy);
+            if (d < 110 && d > 0.1) { t.vx += (dx / d) * (110 - d) * 0.045; t.vy += (dy / d) * (110 - d) * 0.045; }
+          }
+          t.vx += -t.ox * 0.06; t.vy += -t.oy * 0.06; t.vx *= 0.84; t.vy *= 0.84;
+          t.ox += t.vx; t.oy += t.vy;
+          if (Math.abs(t.ox) > 0.2 || Math.abs(t.oy) > 0.2 || Math.abs(t.vx) > 0.05) moving = true;
+          else { t.ox = t.oy = t.vx = t.vy = 0; }
+
+          ctx.save();
+          ctx.translate(x + t.w / 2, y + t.h / 2);
+          ctx.rotate(rot);
+          if (t.retired) {
+            const a = 0.55 - 0.3 * e;
+            ctx.strokeStyle = `rgba(${AMBER},${a})`; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+            ctx.strokeRect(-t.w / 2, -t.h / 2, t.w, t.h);
+          } else {
+            ctx.fillStyle = `rgba(${t.mint ? MINT : CYAN},${0.35 + 0.55 * e})`;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(-t.w / 2, -t.h / 2, t.w, t.h, t.h / 2); else ctx.rect(-t.w / 2, -t.h / 2, t.w, t.h);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+        return moving;
+      }
+
+      function tick(now) {
+        raf = 0;
+        if (!visible) return;
+        if (draw(now)) raf = requestAnimationFrame(tick);
+      }
+      const kick = () => { if (!raf && visible) raf = requestAnimationFrame(tick); };
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = canvas.clientWidth; H = canvas.clientHeight;
+        canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        build(); start = performance.now();
+        if (still) draw(0); else kick();
+      }
+
+      new ResizeObserver(resize).observe(canvas);
+      if (!still) {
+        again.hidden = false;
+        again.addEventListener("click", () => { seedBase += 13; build(); start = performance.now(); kick(); });
+        canvas.parentElement.addEventListener("pointermove", (e) => {
+          const b = canvas.getBoundingClientRect();
+          pointer = { x: e.clientX - b.left, y: e.clientY - b.top }; kick();
+        });
+        canvas.parentElement.addEventListener("pointerleave", () => { pointer = null; kick(); });
+        new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible) kick(); }).observe(canvas);
+        document.addEventListener("visibilitychange", () => { visible = !document.hidden; if (visible) kick(); });
+      }
+    }
+
+    /* ---------- Text moment: the key sentence decodes into place once, on first view ---------- */
+    const el = document.querySelector("[data-decode]");
+    if (el && !reduced) {
+      const text = el.textContent.trim();
+      el.innerHTML = '<span class="sr"></span><span class="vis" aria-hidden="true"></span>';
+      el.firstChild.textContent = text;
+      const vis = el.lastChild;
+      const pool = "abcdefghijklmnopqrstuvwxyz";
+      const show = (n, t) => {
+        let out = "";
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (c === " " || i < n) out += c;
+          else out += pool[Math.floor(Math.random() * pool.length)];
+        }
+        vis.textContent = out;
+      };
+      vis.textContent = text; // the real sentence stays in place until the animation starts
+      let ran = false;
+      new IntersectionObserver(([en], obs) => {
+        if (!en.isIntersecting || ran) return;
+        ran = true; obs.disconnect();
+        show(0);
+        const t0 = performance.now(), dur = 1500;
+        const step = (now) => {
+          const p = Math.min(1, (now - t0) / dur);
+          show(Math.floor(p * text.length));
+          if (p < 1) requestAnimationFrame(step); else vis.textContent = text;
+        };
+        requestAnimationFrame(step);
+      }, { threshold: 0.2, rootMargin: "0px 0px -10% 0px" }).observe(el);
+    }
+  })();
+  </script>
+</body>
+</html>

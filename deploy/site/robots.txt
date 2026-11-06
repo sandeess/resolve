@@ -1,0 +1,5 @@
+# Everything on this site is public and meant to be found, by people and by AI agents.
+User-agent: *
+Allow: /
+
+Sitemap: https://sortitouthq.com/sitemap.xml

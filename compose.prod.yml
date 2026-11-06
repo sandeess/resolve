@@ -193,6 +193,23 @@ services:
       - traefik.http.routers.mcp.entrypoints=https
       - traefik.http.routers.mcp.tls.certresolver=le
 
+  # Optional personal front page at the bare domain (and www). Off by default so it
+  # never competes with an existing site: enable with COMPOSE_PROFILES=site in .env.prod
+  # (or --profile site) once the apex A record points at this server.
+  site:
+    image: nginx:1.27-alpine
+    profiles: ["site"]
+    restart: unless-stopped
+    volumes:
+      - ./deploy/site:/usr/share/nginx/html:ro
+      - ./deploy/site/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.site.loadbalancer.server.port=80
+      - traefik.http.routers.site.rule=Host(`${DOMAIN}`) || Host(`www.${DOMAIN}`)
+      - traefik.http.routers.site.entrypoints=https
+      - traefik.http.routers.site.tls.certresolver=le
+
 volumes:
   app-db-data:
   app-files:

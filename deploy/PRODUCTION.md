@@ -61,6 +61,14 @@ docker compose --env-file .env.prod -f compose.prod.yml ps
 
 The first start builds the image (a few minutes) and Keycloak imports the realm. Open `https://app.sortitouthq.com` and sign in.
 
+## 4b. Optional: your personal page at the bare domain
+
+`deploy/site/index.html` is a small about-me page with Resolve as its first product. It is served at `https://<domain>` and `https://www.<domain>` by a tiny nginx container, and it is **off by default** so it never replaces a site you already have.
+
+To turn it on: point the apex (`@`) and `www` A records at this server (DNS only), set `COMPOSE_PROFILES=site` in `.env.prod` (the bootstrap script asks), and run `docker compose --env-file .env.prod -f compose.prod.yml up -d`. Edit the text in `deploy/site/index.html` any time; it is plain HTML, no build step.
+
+The page ships its own search and AI-agent metadata: title and description, canonical URL, Open Graph and Twitter cards (`og.png`), schema.org JSON-LD (Person, WebSite, ProfilePage, SoftwareApplication), `robots.txt`, `sitemap.xml` and a plain-text `llms.txt` for AI agents. After the DNS switch: submit `https://<domain>/sitemap.xml` in Google Search Console, and check the link preview by pasting the URL into a chat or a social post. If you change the text, keep `llms.txt` and the JSON-LD in `index.html` in step with it.
+
 ## 5. Let people ask for access (Google Form)
 
 The public front page has a **Request access** button that opens a Google Form inside the page, so new people reach you without an account.
