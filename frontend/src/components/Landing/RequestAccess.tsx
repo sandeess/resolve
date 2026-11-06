@@ -7,17 +7,11 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  ACCESS_REQUEST_EMAIL,
-  ACCESS_REQUEST_URL,
-  accessRequestMailto,
-  embeddedFormUrl,
-} from "@/config"
+import { ACCESS_REQUEST_URL, embeddedFormUrl } from "@/config"
 
 /**
- * "Request access": opens the Google Form in a dialog (so a new person can ask for an
- * account without leaving the page), or, with no form configured, a pre-filled email.
- * Renders nothing when neither is configured.
+ * "Request access": opens the Google Form in a dialog, so a new person can ask for an
+ * account without leaving the page. Renders nothing when no form is configured.
  */
 export function RequestAccess({
   className,
@@ -27,14 +21,7 @@ export function RequestAccess({
   children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
-  if (!ACCESS_REQUEST_URL) {
-    if (!ACCESS_REQUEST_EMAIL) return null
-    return (
-      <a href={accessRequestMailto()} className={className}>
-        {children}
-      </a>
-    )
-  }
+  if (!ACCESS_REQUEST_URL) return null
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className={className}>

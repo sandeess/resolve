@@ -75,7 +75,9 @@ The public front page has a **Request access** button that opens a Google Form i
 
 1. In Google Forms create a form. Suggested questions: full name, work email, organisation, which journal(s), role (author / editor / copyeditor / production / other), and why they need access.
 2. Turn on email notifications for new responses (Responses tab, three dots, "Get email notifications for new responses") so each request lands in your inbox.
-3. Copy the form's link (Send, link icon) and put it in `.env.prod` as `ACCESS_REQUEST_URL`, then rebuild: `docker compose --env-file .env.prod -f compose.prod.yml up -d --build` (the value is baked into the web app at build time).
+3. Copy the form's link (Publish, then the responder link; it looks like `https://docs.google.com/forms/d/e/…/viewform`) and put it in `.env.prod` as `ACCESS_REQUEST_URL`, then `sudo bash deploy/update.sh` (the value is baked into the web app at build time). The form then opens inside the page, with no redirect.
+
+The repository deliberately has no default form: each deployment sets its own, so requests go to the right person.
 
 When a request arrives: create their account in Keycloak (below), then add their email to the journal on the **People** page. They get access the first time they sign in.
 

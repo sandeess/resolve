@@ -124,7 +124,6 @@ services:
       args:
         VITE_OIDC_AUTHORITY: https://auth.${DOMAIN}/realms/resolve
         VITE_ACCESS_REQUEST_URL: ${ACCESS_REQUEST_URL:-}
-        VITE_ACCESS_REQUEST_EMAIL: ${ACCESS_REQUEST_EMAIL:-}
     command: ["bash", "scripts/prestart.sh"]
     depends_on:
       db:

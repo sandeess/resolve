@@ -31,7 +31,6 @@ ask ACME_EMAIL "Email for Let's Encrypt notices"
 ask ADMIN_EMAIL "Email of the first Resolve administrator (you)" "$ACME_EMAIL"
 read -r -s -p "DeepInfra API key (input hidden): " DEEPINFRA_API_KEY; echo
 ask ACCESS_URL "Google Form link for access requests (optional, Enter to skip)" ""
-ask ACCESS_EMAIL "Email for access requests when there is no form (optional, Enter to skip)" "$ACME_EMAIL"
 ask SERVE_SITE "Also serve the personal front page at $DOMAIN and www.$DOMAIN? (y/N; only if those DNS records point here)" "N"
 [ -n "$DEEPINFRA_API_KEY" ] || { echo "A DeepInfra API key is required."; exit 1; }
 
@@ -71,7 +70,6 @@ DEEPINFRA_API_KEY=$DEEPINFRA_API_KEY
 LITELLM_MASTER_KEY=$(secret)
 MAX_UPLOAD_MB=50
 ACCESS_REQUEST_URL=$ACCESS_URL
-ACCESS_REQUEST_EMAIL=$ACCESS_EMAIL
 COMPOSE_PROFILES=$([[ "$SERVE_SITE" =~ ^[Yy] ]] && echo site || echo "")
 EOF
 chmod 600 .env.prod
