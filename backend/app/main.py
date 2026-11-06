@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import sentry_sdk
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
@@ -20,7 +20,8 @@ hide_query_strings_in_access_logs()
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
-    return f"{route.tags[0]}-{route.name}"
+    tag = route.tags[0] if route.tags else "app"
+    return f"{tag}-{route.name}"
 
 
 if settings.SENTRY_DSN and settings.FASTAPI_ENV != "development":
@@ -35,10 +36,15 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         yield
 
 
+# Interactive API docs and the schema are for developers: not published in production.
+_DEV = settings.FASTAPI_ENV == "development"
+
 app = FastAPI(
     lifespan=lifespan,
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=f"{settings.API_V1_STR}/openapi.json" if _DEV else None,
+    docs_url="/docs" if _DEV else None,
+    redoc_url="/redoc" if _DEV else None,
     generate_unique_id_function=custom_generate_unique_id,
 )
 
@@ -57,6 +63,19 @@ async def handle_domain_error(_: Request, exc: DomainError) -> JSONResponse:
 
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.api_route(
+    f"{settings.API_V1_STR}/{{path:path}}",
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    include_in_schema=False,
+)
+def api_not_found(path: str) -> None:  # noqa: ARG001
+    """Unknown API paths answer JSON 404, never the web app's index page."""
+    raise HTTPException(status_code=404, detail="Not Found")
+
+
 # The SPA bundle only exists in built images; in dev the Vite server serves it.
+# Direct visits to client-side routes get index.html (the default fallback).
 if FRONTEND_DIR.is_dir():
     app.frontend("/", directory=FRONTEND_DIR)

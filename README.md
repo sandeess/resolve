@@ -134,7 +134,7 @@ Most AI demos are a screenshot. Resolve ships an **evaluation harness** that tes
 | Answers that leaked a **stale** or **other-journal** value | **0.0%** |
 | Unanswerable questions correctly refused | **100%** |
 | Typical time to a cited answer | **1 to 2 seconds** |
-| Automated tests | **246** (integration tests run against real Postgres with row-level security on) |
+| Automated tests | **248** (integration tests run against real Postgres with row-level security on) |
 
 The corpus is synthetic, so treat absolute numbers as friendly. The *differences* are the finding: the harness showed that the first keyword search was crippled (fixed: recall from 25% to 65%), that mixing keyword and vector search equally was *worse* than vector alone (re-weighted), and that a fashionable "context prefix" trick did not help (kept honest in the report). Details: [`eval/README.md`](eval/README.md).
 
@@ -169,7 +169,7 @@ A compact, boring-on-purpose stack, chosen so one small team can run it.
 | Identity | **Keycloak**, OIDC + PKCE | Standard sign-in, dynamic client registration for AI tools |
 | AI tools | **FastMCP** server with real OAuth, 7 tools, member-level only, confirm-before-write | Colleagues' AI assistants get the same fenced access |
 | Web | React, TanStack Router and Query, shadcn/ui, Tailwind; command palette, dark mode, drag-and-drop uploads | A calm, Google-style interface |
-| Quality | CI (lint, types, 246 tests, licence gate, vulnerability scans), eval harness | Regressions are caught, not discovered by authors |
+| Quality | CI (lint, types, 248 tests, licence gate, vulnerability scans), eval harness | Regressions are caught, not discovered by authors |
 | Deploy | Docker Compose, **Traefik with automatic HTTPS**, production Keycloak realm | One server, one command |
 
 No GPL, AGPL or SSPL dependency is allowed in the shipped tree (enforced in CI); the open-source stack is MIT, Apache-2.0 and BSD, with LGPL (for example the Postgres driver) permitted. Read the full write-up, with the Ask pipeline, the knowledge model, the permission design and the measured trade-offs: [`docs/engineering.md`](docs/engineering.md).

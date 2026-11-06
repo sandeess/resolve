@@ -104,7 +104,7 @@ What the measurements changed (details in [`eval/README.md`](../eval/README.md))
 
 ## Quality gates
 
-`.github/workflows/ci.yml`: ruff and mypy, **246 backend tests** (integration tests start real pgvector containers and send requests through RLS), frontend lint, type-check and build, a licence gate (no GPL/AGPL/SSPL in shipped Python or npm packages), `pip-audit` and `npm audit`, and a Docker image build. Python 3.14, strict typing, layered code (api → services → domain, no I/O in the domain).
+`.github/workflows/ci.yml`: ruff and mypy, **248 backend tests** (integration tests start real pgvector containers and send requests through RLS), frontend lint, type-check and build, a licence gate (no GPL/AGPL/SSPL in shipped Python or npm packages), `pip-audit` and `npm audit`, and a Docker image build. Python 3.14, strict typing, layered code (api → services → domain, no I/O in the domain).
 
 ## Choices and why
 
