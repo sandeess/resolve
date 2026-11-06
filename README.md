@@ -1,105 +1,220 @@
+<div align="center">
+
 # Resolve
 
-Ticketing + RAG for publishing operations. Editorial, author and stylesheet queries are answered from the **latest revision** of each journal's files and from closed tickets, with citations. Work in progress: see the build status below.
+### The institutional memory your publishing house never had.
 
-## Status
+Every editorial office runs on answers that live in one person's head.<br/>
+Resolve captures them, keeps them current, and hands every colleague a **cited, trustworthy answer in two seconds**.
 
-| Area | State |
-|---|---|
-| Auth (Keycloak OIDC, PKCE), RBAC policy | done |
-| Journals, articles, versioned documents, local file storage | done |
-| Web UI: sign-in, journals, documents with version history, articles | done |
-| Ingestion (PDF, DOCX, Markdown/text, EML), background worker, hybrid retrieval (pgvector + full-text, RRF) | done |
-| Ask: LangGraph flow with citations, abstention, current-version-only answers; Ask tab; index status + retry | done |
-| Tickets: raise (also from an unanswered Ask), assign, comment, resolve, lead approval; approved answers become citable knowledge, reopening withdraws them | done |
-| Evaluation: seeded synthetic corpus, 168 golden questions, retrieval ablation, end-to-end scoring, thresholds (`eval/`) | done |
-| Postgres row-level security on every tenant table (second line of defence behind the permission checks) | done |
-| CI: lint, types, tests, licence gate, vulnerability scans, image build (`.github/workflows/ci.yml`) | done |
-| MCP server with OAuth (Keycloak dynamic client registration + PKCE): 7 tools, a stylesheet resource, 2 prompts | done |
-| Email intake, Langfuse, Docling adapter, eval thresholds in CI | not started |
+[The problem](#the-problem) · [What Resolve does](#what-resolve-does) · [A day with Resolve](#a-day-with-resolve) · [Proof](#proof-not-promises) · [Trust and privacy](#built-for-trust) · [Engineering](#the-engineering-behind-it) · [Run it](#run-it)
 
-## Run it locally
+</div>
 
-Requirements: Docker, Python 3.14 with [uv](https://docs.astral.sh/uv/), Node 24.
+---
 
-```bash
-cp .env.example .env            # then change the secrets
-docker compose up -d db keycloak litellm      # needs DEEPINFRA_API_KEY in .env
-cd backend && uv sync && bash scripts/prestart.sh   # migrations + job-queue tables
-uv run uvicorn app.main:app --port 8000     # API
-uv run procrastinate --app=app.workers.queue.queue worker --queues ingestion   # indexing worker
-uv run uvicorn app.mcp.server:app --port 8010   # MCP server (optional)
-cd ../frontend && npm install && npm run dev  # UI on :5173
-```
+## The 30-second pitch
 
-Models are chosen in `deploy/litellm.yaml` (DeepInfra: embeddings `BAAI/bge-m3`; chat `chat-fast` = Llama-4-Maverick by default, `chat-large` = Llama-3.3-70B as the quality option and fallback, `chat-small` = Llama-3.1-8B). Embeddings are 1024-dimensional; changing to a model with another size needs a migration and re-index.
+A publishing house is a machine for applying rules correctly, thousands of times: *this journal's reference style, that journal's embargo period, the revised stylesheet that took effect in March, the exception agreed for one manuscript.*
 
-Keycloak runs on <http://localhost:8081>. The realm in `deploy/keycloak/realm-export.json` seeds four dev users (admin, lead, assistant, viewer `@example.com`); their dev-only password is in that file.
+Those rules are written down in PDFs, Word files, email threads and old tickets, and the final authority is usually **one experienced person who remembers**. When they are on leave, in a meeting, or leave the company, the office slows down, guesses, or applies last year's rule.
 
-## Deploy
+Resolve turns that scattered memory into a system:
 
-`compose.prod.yml` runs the whole stack on one VPS behind Traefik with automatic HTTPS at `app.`, `auth.` and `mcp.` subdomains of your domain. Step-by-step setup, DNS, backups and updates: [deploy/PRODUCTION.md](deploy/PRODUCTION.md). The production Keycloak realm has no seeded users; the first administrator comes from `.env.prod`.
+- **Ask** a question in plain language, get an answer with **citations to the exact passage**.
+- Answers come **only from the latest revised files** and from **tickets a lead has approved**, never from a superseded stylesheet or an unchecked guess.
+- Every journal is a **fence**: a question about one title can never surface another title's rules.
+- If Resolve doesn't know, it **says so** and turns the question into a ticket. When the lead answers, the whole office knows the answer from then on.
 
-## MCP server
+It is a ticketing system that **teaches** a search engine, and a search engine that **cannot lie about its sources**.
 
-`app/mcp/server.py` exposes Resolve to MCP clients over streamable HTTP at `http://localhost:8010/mcp`. It authenticates with the same Keycloak realm as the web app: the server answers `401` with a pointer to its OAuth metadata, the client finds Keycloak, **registers itself** (dynamic client registration), the user logs in and consents, and the client sends a PKCE-issued token on every call. Tokens must carry the `resolve-api` audience, which the realm adds to every client by default.
+---
 
-| Tool | Reads or writes | What it does |
+## The problem
+
+### The single point of failure
+
+Ask any managing editor who answers the unusual questions. There is a name. Often one name per journal.
+
+| Question that lands in the inbox | Who asks | Where the answer really is | What goes wrong today |
+|---|---|---|---|
+| "What is the embargo period before an accepted paper can be posted online?" | author, production | a policy PDF, plus a 2023 email exception | someone quotes last year's number |
+| "How long may the abstract be?" | author, copyeditor | stylesheet v2 *and* a ticket that changed it | two colleagues give two answers |
+| "Do we need a cover letter?" | author | a line in a guidelines document | the author waits two days for a reply |
+| "Does this manuscript get the extended reference list agreed with the editor?" | production | one email thread, one ticket | the exception is forgotten at proofs |
+| "Which stylesheet applies to a paper accepted before the revision?" | copyeditor | the revision's cover note | the new rules are applied retroactively |
+
+### Why it keeps happening
+
+1. **Knowledge is scattered across five places:** stylesheets, guidelines, email, tickets, and people's memory. No search box covers all of them.
+2. **Rules change.** Stylesheets are revised; the old PDF is still in a shared folder, still ranks first in search, still gets quoted.
+3. **Rules differ by title and by article.** What is true for one journal is wrong for the next, and an article can carry its own exception.
+4. **The answer gets decided in a ticket or an email, then vanishes.** The same question comes back next month and costs the same effort again.
+5. **Seniority becomes a bottleneck.** The person who knows is interrupted all day, and the office cannot grow without hiring another person who knows.
+
+### What it costs (without inventing numbers)
+
+- **Interruptions:** every routine question pulls your most experienced editor out of focus work. Multiply by the number of colleagues who ask and the number of times a day.
+- **Inconsistency:** the same question gets different answers depending on who was asked, and authors notice.
+- **Rework:** a wrongly applied rule is found at proofs, where fixing it is slowest and most expensive.
+- **Key-person risk:** one resignation, illness or holiday and the office loses its memory. This is the "bus factor" and most publishers carry it quietly.
+- **Slow onboarding:** a new assistant needs months before they can answer alone.
+
+*A simple way to size it for your own house: (routine questions per week) × (minutes each one interrupts the person who knows) × (weeks per year). Resolve targets exactly that number.*
+
+### Why "just use ChatGPT on our PDFs" does not work
+
+General AI chat over a folder of files fails in four ways that matter in publishing:
+
+| Failure | What happens | What Resolve does instead |
 |---|---|---|
-| `list_journals` | read | journals you belong to, with your role |
-| `ask_resolve` | read | cited answer from current files and approved tickets; says so when it cannot answer |
-| `search_knowledge` | read | the matching passages, no generated answer |
-| `list_tickets`, `get_ticket` | read | browse tickets and read one |
-| `suggest_answer` | read | drafts an answer to a ticket; nothing is saved |
-| `create_ticket` | **write** | raises a ticket; without `confirm=true` it only returns a preview |
+| **Stale answers** | Quotes the old stylesheet because it was in the folder | Only the **current version** of each file is searchable; a revision retires the old one automatically |
+| **Cross-contamination** | Mixes the rules of two journals | Every journal is isolated in the database itself; another journal's rules are not merely hidden, they are invisible |
+| **Unvetted knowledge** | Treats a half-finished ticket as policy | A ticket becomes knowledge only when a **lead approves it**; reopening withdraws it |
+| **Confident guessing** | Invents a plausible rule when it doesn't know | Every claim needs a **citation that is verified**; otherwise it **abstains** and offers to raise a ticket |
 
-Also a `journal://{code}/stylesheet` resource (latest versions only) and two prompts (`triage_open_tickets`, `prepare_reply`).
+---
 
-Design points: an MCP session is **member-level only, never admin**, even for a web admin; row-level security is bound to the same identity. Unknown and not-permitted journals give the same "not found" message. Results quote documents and tickets, so each carries a notice that the text is data, not instructions. Unexpected errors are logged in full and reported generically. Every call logs tool, client, outcome and duration (`resolve.mcp`); there is no audit table yet.
+## What Resolve does
 
-Test it end to end with `python -m uv run python scripts/mcp_smoke.py` (from `backend/`; add `--print-url` to get the sign-in URL instead of opening a browser). It discovers Keycloak, registers itself, waits for you to sign in and consent, then calls every tool and checks the results (7 checks; `create_ticket` is only previewed). **Tested this way:** the FastMCP client, and the MCP Inspector up to the token step. **Known limit:** Claude Code refuses sign-in pages that are plain `http://`, so a real Claude Code or Claude Desktop session needs Keycloak and the MCP server behind `https` (not done). Connect with `claude mcp add --transport http resolve http://localhost:8010/mcp` and authenticate from `/mcp` once they are.
+**1. Ask, search-first.** A single search box, built like the tools you already use. Type a question; get a short answer with `[1] [2]` citations. Each citation points to a source card with the passage, the document, its version and the page or section (ticket sources link to the ticket). `Ctrl/Cmd + K` opens a command palette to ask, jump to a journal or ticket, or switch theme.
 
-Dev Keycloak notes (`deploy/keycloak/realm-export.json`): client registration is open to anonymous callers, every registered client requires user consent, and the "sending host" check is relaxed because Docker rewrites the sender address (tighten it for production). Registered clients may only receive the `openid`, `profile`, `email` and `resolve-api` scopes, and the `offline_access` scope is removed from the realm: MCP clients ask for it whenever it is advertised, and tokens issued without `email` or the `resolve-api` audience are rejected. The MCP server tells clients which scopes to request. `github.com` is a trusted registration host so the MCP Inspector can register. Keycloak only imports the realm on first start; after changing the file, recreate its database (`DROP DATABASE keycloak; CREATE DATABASE keycloak;`) and restart it.
+**2. Always the latest revision.** Upload a revised stylesheet and it becomes the new version of the same document. The old version stays for history and audit, but is never used to answer.
 
-## Security model
+**3. Tickets that teach.** Raise a ticket (or turn an unanswered question into one with a click). A lead resolves and approves it, and from that moment the answer is searchable by everyone, cited as `T-12`. Reopen it and the answer is withdrawn.
 
-Access is checked twice. The services apply the role matrix (`app/domain/policy.py`), and Postgres row-level security enforces journal isolation underneath it (migration `0004`, `app/core/rls.py`):
+**4. Journal fences and roles.** Administrators, leads, assistants and viewers, per journal. Permissions are checked in the application *and again inside the database*, so a bug in one layer cannot leak another title's data.
 
-- Each API request opens one session. Before sign-in it is anonymous (sees no rows); after the token is verified it is bound to the user. Every transaction then runs `SET LOCAL ROLE resolve_app` with `app.user_id` / `app.is_admin` set, so a forgotten check or a query without a journal filter returns nothing instead of another journal's rows.
-- Rows of other journals are invisible, so fetching one by id returns **404**, not 403: the response does not confirm it exists.
-- The identity settings are transaction-local and cannot leak between requests on a pooled connection.
-- The job worker, migrations and the eval harness connect without a context and are deliberately privileged. `app_user` is not row-protected (people are looked up by email when adding members).
-- A new table must be added to the policies or to the allowlist in `tests/integration/test_rls.py`, or that test fails.
+**5. Says "I don't know."** When the sources do not answer, Resolve abstains with a reason and offers to raise a ticket. In editorial work a wrong rule delivered with confidence is worse than a short wait.
 
-## How fast is Ask?
+**6. Works inside your AI tools.** Resolve speaks MCP (Model Context Protocol) with real OAuth sign-in, so an assistant in Claude Code or Claude Desktop can search your knowledge base, draft ticket answers, and (only with explicit confirmation) raise tickets, with exactly the access of the person signed in.
 
-About 1-2 seconds typically, and the answer panel shows where the time went. Two things cut it further: the UI embeds your question while you are still typing, and repeated questions are answered from a cache that is invalidated whenever the journal's documents or approved tickets change. Most of the remaining time is the round trip to the model provider, which varies a lot with your network. Measurements and the model comparison are in [`eval/README.md`](eval/README.md).
+---
 
-## Continuous integration
+## A day with Resolve
 
-`.github/workflows/ci.yml` runs on every push and pull request: ruff and mypy, the full test suite (integration tests start pgvector containers and send every API request through RLS), frontend lint, typecheck and build, a licence gate (no GPL, AGPL or SSPL in shipped Python or npm packages; LGPL such as psycopg is allowed), `pip-audit` and `npm audit`, and a Docker image build. The eval harness runs offline in the test suite; the real-model eval and its thresholds (`eval/thresholds.json`) need an API key and are run by hand.
+*An illustrative scenario.*
 
-## Quality, measured
+> **9:02**: A copyeditor asks the office channel how long the abstract may be. Instead of interrupting the managing editor, she types the question into Resolve.
+>
+> **9:02, two seconds later**: *"The abstract may be 150 words [1]."* Citation 1 opens the stylesheet, version 3, section "Abstracts". She applies the rule and moves on.
+>
+> **10:40**: An author asks about a cover letter. Resolve finds nothing in the current files and says so. The assistant clicks **Raise a ticket**; the question becomes the ticket title, with a note that Ask could not answer it from the current files.
+>
+> **11:15**: The lead answers the ticket in one line and approves it. It is now knowledge.
+>
+> **Tuesday**: Another author asks the same thing. Resolve answers instantly, citing ticket T-12.
+>
+> **Next quarter**: The stylesheet is revised. The new version is uploaded; the old rule can no longer be returned. No one has to remember to "update the FAQ".
+>
+> **While the managing editor is on holiday**: nothing stops.
 
-`eval/` scores retrieval and the real Ask flow on a synthetic corpus with stale-version, cross-journal, article-exception, unapproved-ticket and unanswerable traps. Latest run: **95.8%** of 168 questions passed end to end (default fast model; the 70B scores 97.0%), **0.0%** of answers mentioned a stale or another journal's value, retrieval recall@5 97.8%. Details, the ablation table and what the numbers changed are in [`eval/README.md`](eval/README.md) and [`eval/reports/latest.md`](eval/reports/latest.md). The corpus is synthetic, so treat absolute numbers as friendly.
+```mermaid
+flowchart LR
+    Q([Question]) --> R{In the current<br/>files or an approved<br/>ticket?}
+    R -- yes --> A[Cited answer<br/>in about 2 seconds]
+    R -- no --> N[Honest 'I don't know'<br/>+ raise a ticket]
+    N --> L[Lead answers<br/>and approves]
+    L --> K[(Knowledge base)]
+    K --> R
+    U[New stylesheet<br/>version] --> K
+```
 
-## Tests and checks
+Every resolved question makes the next one free. That is the compounding effect: the office's memory grows with use instead of walking out of the door.
+
+---
+
+## Proof, not promises
+
+Most AI demos are a screenshot. Resolve ships an **evaluation harness** that tests the real system on 168 questions built as traps: stale revisions, another journal's value, article-specific exceptions, unapproved tickets, and questions that must be refused.
+
+| Measured result (synthetic publishing corpus) | |
+|---|---|
+| Questions answered correctly end to end | **95.8%** (97.0% with the larger model) |
+| Answers that leaked a **stale** or **other-journal** value | **0.0%** |
+| Unanswerable questions correctly refused | **100%** |
+| Typical time to a cited answer | **1 to 2 seconds** |
+| Automated tests | **243** (integration tests run against real Postgres with row-level security on) |
+
+The corpus is synthetic, so treat absolute numbers as friendly. The *differences* are the finding: the harness showed that the first keyword search was crippled (fixed: recall from 25% to 65%), that mixing keyword and vector search equally was *worse* than vector alone (re-weighted), and that a fashionable "context prefix" trick did not help (kept honest in the report). Details: [`eval/README.md`](eval/README.md).
+
+---
+
+## Built for trust
+
+Publishers hold unpublished manuscripts and reviewer reports. Resolve is designed to be reviewed by a security team:
+
+- **Your data stays on your server.** Files, text, vectors and tickets live in your own database and storage volume.
+- **The AI sees only what a question needs:** the question and a handful of retrieved passages the asker is allowed to see. Never the whole library.
+- **Zero-retention-minded by design.** The application keeps no persistent record of questions unless someone raises a ticket (there is only a short in-memory cache); its logs contain identifiers and timings, never question or answer text; the model gateway stores nothing. The default model provider's published policy is that request content is not stored to disk, not logged, and not used for training. For a *contractual* zero-data-retention guarantee, point one config file at a provider that signs one, or run the models on your own hardware so **nothing leaves your network**.
+- **Real sign-in, not a home-made login:** Keycloak with OIDC and PKCE; the same identity governs the web app and the AI tools.
+- **Two permission layers**, including Postgres row-level security as the backstop.
+- **Honest limits** are published, including what is not built yet.
+
+Full data-flow table, the privacy ladder and a security-review checklist: [`docs/privacy-and-zdr.md`](docs/privacy-and-zdr.md).
+
+---
+
+## The engineering behind it
+
+A compact, boring-on-purpose stack, chosen so one small team can run it.
+
+| Layer | Choice | Why |
+|---|---|---|
+| API | **FastAPI**, layered (api, services, domain), strict typing | Testable, no I/O in the domain |
+| Data | **Postgres + pgvector**, full-text, **row-level security**, job queue (Procrastinate) | One system to run, secure and back up |
+| Retrieval | Hybrid vector + keyword with rank fusion, scoped **inside the query** | Permissions and version rules apply before ranking |
+| Reasoning | **LangGraph**: retrieve, generate, **verify citations**, abstain | Explicit, testable steps; no uncited claims |
+| Models | **LiteLLM** gateway to DeepInfra (embeddings `bge-m3`, Llama chat models) | Swap provider or go fully private in one config file |
+| Identity | **Keycloak**, OIDC + PKCE | Standard sign-in, dynamic client registration for AI tools |
+| AI tools | **FastMCP** server with real OAuth, 7 tools, member-level only, confirm-before-write | Colleagues' AI assistants get the same fenced access |
+| Web | React, TanStack Router and Query, shadcn/ui, Tailwind; command palette, dark mode, drag-and-drop uploads | A calm, Google-style interface |
+| Quality | CI (lint, types, 243 tests, licence gate, vulnerability scans), eval harness | Regressions are caught, not discovered by authors |
+| Deploy | Docker Compose, **Traefik with automatic HTTPS**, production Keycloak realm | One server, one command |
+
+No GPL, AGPL or SSPL dependency is allowed in the shipped tree (enforced in CI); the open-source stack is MIT, Apache-2.0 and BSD, with LGPL (for example the Postgres driver) permitted. Read the full write-up, with the Ask pipeline, the knowledge model, the permission design and the measured trade-offs: [`docs/engineering.md`](docs/engineering.md).
+
+---
+
+## Where it stands (honest status)
+
+| Done and tested | Planned, not built |
+|---|---|
+| Sign-in, roles, journals, articles | Email **intake** (IMAP / forwarding): `.eml` upload works today |
+| Versioned uploads: PDF, Word, Markdown, text, email | Stylesheet **impact analysis** (which closed tickets a revision makes stale) |
+| Background indexing, hybrid search, cited Ask with abstention | Manuscript **compliance checking** against the stylesheet |
+| Tickets: raise, assign, comment, resolve, approve, reopen | A re-ranking step; Langfuse tracing; PII redaction |
+| Row-level security, evaluation harness, CI | Delete/purge and an audit table for web actions |
+| MCP server with OAuth (7 tools) | A live sign-in test with Claude itself (needs HTTPS hosting) |
+| Production stack with automatic HTTPS | High availability (single-server by design) |
+
+---
+
+## Run it
+
+**Try it locally** (Docker + a model API key):
 
 ```bash
-cd backend
-uv run pytest tests            # unit + integration (integration starts a pgvector container)
-uv run mypy app tests && uv run ruff check app tests
-cd ../frontend && npx tsc -p tsconfig.build.json
+cp .env.example .env              # add DEEPINFRA_API_KEY and change the secrets
+docker compose up -d --build      # app on http://localhost:8000, sign-in on :8081
 ```
 
-After changing API routes, regenerate the TypeScript client with `bash scripts/generate-client.sh`.
+Sign in as `lead@example.com` (development password in the realm file). Upload a stylesheet, ask a question, raise a ticket, approve it, ask again.
 
-## Layout
+**Put it on your own domain** (a small VPS, automatic HTTPS, no seeded dev users): [`deploy/PRODUCTION.md`](deploy/PRODUCTION.md).
 
-```
-backend/app/{api,core,domain,services,repositories,storage}   FastAPI app, layered
-frontend/src                                                  React + TanStack Router/Query
-deploy/keycloak/realm-export.json                             seeded identity realm
-```
+**Develop on it**: [`docs/development.md`](docs/development.md).
 
-The architecture and roadmap live in the project plan; scaffolding came from the MIT-licensed `fastapi/full-stack-fastapi-template`.
+## Documentation
+
+| | |
+|---|---|
+| [`docs/engineering.md`](docs/engineering.md) | Architecture, knowledge model, Ask pipeline, permissions, MCP, evaluation, design choices, limits |
+| [`docs/privacy-and-zdr.md`](docs/privacy-and-zdr.md) | Data flow, retention, zero-data-retention options, security-review checklist |
+| [`docs/development.md`](docs/development.md) | Local setup, tests, MCP smoke test, layout |
+| [`deploy/PRODUCTION.md`](deploy/PRODUCTION.md) | Hosting on a VPS with HTTPS, DNS, backups, updates |
+| [`eval/README.md`](eval/README.md) | The evaluation harness and what it found |
+
+## License
+
+MIT, see [`LICENSE`](LICENSE). The project scaffold started from the MIT-licensed [`fastapi/full-stack-fastapi-template`](https://github.com/fastapi/full-stack-fastapi-template).

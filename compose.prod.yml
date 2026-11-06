@@ -43,6 +43,8 @@ services:
       - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
       - --certificatesresolvers.le.acme.httpchallenge.entrypoint=http
       - --accesslog
+      # The Ask page address contains the question; keep it (and any query) out of logs.
+      - --accesslog.fields.names.RequestPath=drop
       - --log
 
   db:

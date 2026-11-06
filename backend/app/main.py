@@ -10,10 +10,13 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.core.logging import hide_query_strings_in_access_logs
 from app.domain.errors import DomainError
 from app.workers.queue import queue
 
 FRONTEND_DIR = Path(__file__).parent / "frontend"
+
+hide_query_strings_in_access_logs()
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
