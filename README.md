@@ -83,7 +83,7 @@ General AI chat over a folder of files fails in four ways that matter in publish
 
 **3. Tickets that teach.** Raise a ticket (or turn an unanswered question into one with a click). A lead resolves and approves it, and from that moment the answer is searchable by everyone, cited as `T-12`. Reopen it and the answer is withdrawn.
 
-**4. Journal fences and roles.** Administrators, leads, assistants and viewers, per journal. Permissions are checked in the application *and again inside the database*, so a bug in one layer cannot leak another title's data.
+**4. Journal fences and roles.** Administrators, leads, assistants and viewers, per journal. Permissions are checked in the application *and again inside the database*, so a bug in one layer cannot leak another title's data. Administrators manage who can use each journal on a **People** page, and can add someone by email before they have ever signed in.
 
 **5. Says "I don't know."** When the sources do not answer, Resolve abstains with a reason and offers to raise a ticket. In editorial work a wrong rule delivered with confidence is worse than a short wait.
 
@@ -134,7 +134,7 @@ Most AI demos are a screenshot. Resolve ships an **evaluation harness** that tes
 | Answers that leaked a **stale** or **other-journal** value | **0.0%** |
 | Unanswerable questions correctly refused | **100%** |
 | Typical time to a cited answer | **1 to 2 seconds** |
-| Automated tests | **243** (integration tests run against real Postgres with row-level security on) |
+| Automated tests | **246** (integration tests run against real Postgres with row-level security on) |
 
 The corpus is synthetic, so treat absolute numbers as friendly. The *differences* are the finding: the harness showed that the first keyword search was crippled (fixed: recall from 25% to 65%), that mixing keyword and vector search equally was *worse* than vector alone (re-weighted), and that a fashionable "context prefix" trick did not help (kept honest in the report). Details: [`eval/README.md`](eval/README.md).
 
@@ -169,7 +169,7 @@ A compact, boring-on-purpose stack, chosen so one small team can run it.
 | Identity | **Keycloak**, OIDC + PKCE | Standard sign-in, dynamic client registration for AI tools |
 | AI tools | **FastMCP** server with real OAuth, 7 tools, member-level only, confirm-before-write | Colleagues' AI assistants get the same fenced access |
 | Web | React, TanStack Router and Query, shadcn/ui, Tailwind; command palette, dark mode, drag-and-drop uploads | A calm, Google-style interface |
-| Quality | CI (lint, types, 243 tests, licence gate, vulnerability scans), eval harness | Regressions are caught, not discovered by authors |
+| Quality | CI (lint, types, 246 tests, licence gate, vulnerability scans), eval harness | Regressions are caught, not discovered by authors |
 | Deploy | Docker Compose, **Traefik with automatic HTTPS**, production Keycloak realm | One server, one command |
 
 No GPL, AGPL or SSPL dependency is allowed in the shipped tree (enforced in CI); the open-source stack is MIT, Apache-2.0 and BSD, with LGPL (for example the Postgres driver) permitted. Read the full write-up, with the Ask pipeline, the knowledge model, the permission design and the measured trade-offs: [`docs/engineering.md`](docs/engineering.md).
@@ -180,7 +180,7 @@ No GPL, AGPL or SSPL dependency is allowed in the shipped tree (enforced in CI);
 
 | Done and tested | Planned, not built |
 |---|---|
-| Sign-in, roles, journals, articles | Email **intake** (IMAP / forwarding): `.eml` upload works today |
+| Sign-in, roles, journals, articles, a People page for access, a request-access form on the front page | Email **intake** (IMAP / forwarding): `.eml` upload works today |
 | Versioned uploads: PDF, Word, Markdown, text, email | Stylesheet **impact analysis** (which closed tickets a revision makes stale) |
 | Background indexing, hybrid search, cited Ask with abstention | Manuscript **compliance checking** against the stylesheet |
 | Tickets: raise, assign, comment, resolve, approve, reopen | A re-ranking step; Langfuse tracing; PII redaction |
@@ -202,6 +202,8 @@ docker compose up -d --build      # app on http://localhost:8000, sign-in on :80
 Sign in as `lead@example.com` (development password in the realm file). Upload a stylesheet, ask a question, raise a ticket, approve it, ask again.
 
 **Put it on your own domain** (a small VPS, automatic HTTPS, no seeded dev users): [`deploy/PRODUCTION.md`](deploy/PRODUCTION.md).
+
+**New people** ask for an account through a Google Form embedded on the front page (set `ACCESS_REQUEST_URL`); an administrator creates the account and adds them on the People page.
 
 **Develop on it**: [`docs/development.md`](docs/development.md).
 

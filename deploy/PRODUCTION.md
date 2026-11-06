@@ -12,7 +12,15 @@ Only ports 80 and 443 are published. Traefik gets and renews Let's Encrypt certi
 
 ## 1. Server
 
-Any Linux VPS with 2 vCPU / 4 GB RAM and 20 GB disk is enough (e.g. Hetzner CX22, or Oracle Cloud's Always Free ARM instance). Ubuntu 24.04:
+**On Google Cloud** (what `deploy/gcp/create-vm.sh` automates): install the [gcloud CLI](https://cloud.google.com/sdk/docs/install), run `gcloud auth login`, make sure the project has billing enabled, then
+
+```bash
+PROJECT=your-project-id bash deploy/gcp/create-vm.sh
+```
+
+It reserves a static IP, opens ports 80 and 443, and creates an `e2-medium` Ubuntu 24.04 VM (2 vCPU, 4 GB) with Docker and swap. Expect roughly 25 USD a month for the VM plus a few dollars for disk and IP; new Google Cloud accounts usually have trial credit (check the current offer). Cloud Run is not a fit: Keycloak, Postgres and the worker need a long-running machine with a disk. The script prints the IP for the DNS step.
+
+**Anywhere else:** any Linux VPS with 2 vCPU / 4 GB RAM and 20 GB disk is enough (e.g. Hetzner CX22, or Oracle Cloud's Always Free ARM instance). Ubuntu 24.04:
 
 ```bash
 curl -fsSL https://get.docker.com | sh
@@ -42,7 +50,17 @@ docker compose --env-file .env.prod -f compose.prod.yml ps
 
 The first start builds the image (a few minutes) and Keycloak imports the realm. Open `https://app.sortitouthq.com` and sign in.
 
-## 5. Add people and journals
+## 5. Let people ask for access (Google Form)
+
+The public front page has a **Request access** button that opens a Google Form inside the page, so new people reach you without an account.
+
+1. In Google Forms create a form. Suggested questions: full name, work email, organisation, which journal(s), role (author / editor / copyeditor / production / other), and why they need access.
+2. Turn on email notifications for new responses (Responses tab, three dots, "Get email notifications for new responses") so each request lands in your inbox.
+3. Copy the form's link (Send, link icon) and put it in `.env.prod` as `ACCESS_REQUEST_URL`, then rebuild: `docker compose --env-file .env.prod -f compose.prod.yml up -d --build` (the value is baked into the web app at build time).
+
+When a request arrives: create their account in Keycloak (below), then add their email to the journal on the **People** page. They get access the first time they sign in.
+
+## 6. Add people and journals
 
 Sign in as the administrator and create a journal. To add users, use the Keycloak admin console through an SSH tunnel (it is not public):
 
@@ -52,7 +70,7 @@ ssh -L 8081:localhost:8080 you@server   # then open http://localhost:8081/admin
 
 Alternatively `docker compose ... exec keycloak` into the container. Make a user in realm **resolve**, then add them to a journal in the app. Give someone the `resolve-admin` realm role only if they should administer everything.
 
-## 6. Connect Claude Code
+## 7. Connect Claude Code
 
 ```bash
 claude mcp add --transport http resolve https://mcp.sortitouthq.com/mcp

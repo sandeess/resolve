@@ -3,7 +3,7 @@
 import uuid
 
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session, col, select
+from sqlmodel import Session, col, func, select
 
 from app.domain.errors import ConflictError, NotFoundError, PermissionDeniedError
 from app.domain.policy import Action, Role, Scope
@@ -17,7 +17,7 @@ from app.models import (
     MemberPublic,
     User,
 )
-from app.services.access import require
+from app.services.access import PENDING_SUB_PREFIX, pending_sub, require
 
 
 def create_journal(session: Session, scope: Scope, data: JournalCreate) -> Journal:
@@ -60,15 +60,20 @@ def get_journal(session: Session, scope: Scope, journal_id: uuid.UUID) -> Journa
 def set_member(
     session: Session, scope: Scope, journal_id: uuid.UUID, email: str, role: Role
 ) -> MemberPublic:
-    """Adds a user to a journal or changes their role.
+    """Adds a person to a journal or changes their role.
 
-    The user must already have signed in once, so that a row exists for them.
+    Someone who has not signed in yet is added as a pending user keyed by their
+    email; they claim the membership when they first sign in with that address.
     """
     require(scope, journal_id, Action.MANAGE_JOURNAL)
     get_journal(session, scope, journal_id)
-    user = session.exec(select(User).where(User.email == email)).first()
+    user = session.exec(
+        select(User).where(func.lower(col(User.email)) == email.strip().lower())
+    ).first()
     if user is None:
-        raise NotFoundError(f"no user with email {email!r}; they must sign in first")
+        user = User(sub=pending_sub(email), email=email.strip(), is_active=True)
+        session.add(user)
+        session.flush()
     member = session.exec(
         select(JournalMember).where(
             JournalMember.journal_id == journal_id, JournalMember.user_id == user.id
@@ -80,7 +85,49 @@ def set_member(
         member.role = role
     session.add(member)
     session.commit()
-    return MemberPublic(user_id=user.id, email=user.email, role=role)
+    return _member_public(user, role)
+
+
+def list_members(
+    session: Session, scope: Scope, journal_id: uuid.UUID
+) -> list[MemberPublic]:
+    """Lists a journal's members (administrators only)."""
+    require(scope, journal_id, Action.MANAGE_JOURNAL)
+    get_journal(session, scope, journal_id)
+    rows = session.exec(
+        select(JournalMember, User)
+        .join(User, col(User.id) == col(JournalMember.user_id))
+        .where(JournalMember.journal_id == journal_id)
+        .order_by(func.lower(col(User.email)))
+    )
+    return [_member_public(user, member.role) for member, user in rows]
+
+
+def remove_member(
+    session: Session, scope: Scope, journal_id: uuid.UUID, user_id: uuid.UUID
+) -> None:
+    """Removes a person from a journal (administrators only)."""
+    require(scope, journal_id, Action.MANAGE_JOURNAL)
+    get_journal(session, scope, journal_id)
+    member = session.exec(
+        select(JournalMember).where(
+            JournalMember.journal_id == journal_id, JournalMember.user_id == user_id
+        )
+    ).first()
+    if member is None:
+        raise NotFoundError("that person is not a member of this journal")
+    session.delete(member)
+    session.commit()
+
+
+def _member_public(user: User, role: Role) -> MemberPublic:
+    return MemberPublic(
+        user_id=user.id,
+        email=user.email,
+        role=role,
+        full_name=user.full_name,
+        pending=user.sub.startswith(PENDING_SUB_PREFIX),
+    )
 
 
 def create_article(

@@ -104,7 +104,7 @@ What the measurements changed (details in [`eval/README.md`](../eval/README.md))
 
 ## Quality gates
 
-`.github/workflows/ci.yml`: ruff and mypy, **243 backend tests** (integration tests start real pgvector containers and send requests through RLS), frontend lint, type-check and build, a licence gate (no GPL/AGPL/SSPL in shipped Python or npm packages), `pip-audit` and `npm audit`, and a Docker image build. Python 3.14, strict typing, layered code (api → services → domain, no I/O in the domain).
+`.github/workflows/ci.yml`: ruff and mypy, **246 backend tests** (integration tests start real pgvector containers and send requests through RLS), frontend lint, type-check and build, a licence gate (no GPL/AGPL/SSPL in shipped Python or npm packages), `pip-audit` and `npm audit`, and a Docker image build. Python 3.14, strict typing, layered code (api → services → domain, no I/O in the domain).
 
 ## Choices and why
 
@@ -125,6 +125,7 @@ Scaffolding came from the MIT-licensed `fastapi/full-stack-fastapi-template`. No
 
 - Email **intake** by IMAP/forwarding is not built (you can upload `.eml` files). Langfuse tracing, the Docling parser adapter, a reranker, stylesheet-compliance checking on manuscripts, and stale-answer impact analysis on stylesheet revisions are planned, not done.
 - Single tenant, single server; no high availability.
+- Accounts are created by an administrator in Keycloak (self-registration is off); the front page links a Google Form for access requests. There is no in-app account creation.
 - No delete or purge endpoints yet; no audit table for web actions (MCP calls are logged).
 - Evaluation is on synthetic data with string-based checks; the real-model eval is run by hand, not in CI.
 - A real Claude Code or Claude Desktop sign-in needs the MCP server and Keycloak on `https` (see [deployment](../deploy/PRODUCTION.md)); tested with the FastMCP client and the MCP Inspector, not yet with Claude itself.

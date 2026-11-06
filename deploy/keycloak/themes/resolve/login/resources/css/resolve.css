@@ -1,67 +1,126 @@
-/* Resolve login: the app's Google-style palette on top of Keycloak's v2 theme. */
+/* Resolve sign-in: the dark, cyan-on-black look of the front page, on top of Keycloak's v2 theme.
+   Dark mode is forced in theme.properties (kcHtmlClass). No violet. */
 :root,
 .pf-v5-theme-dark {
-  --pf-v5-global--primary-color--100: #1a73e8;
-  --pf-v5-global--primary-color--200: #1765cc;
-  --pf-v5-global--link--Color: #1a73e8;
-  --pf-v5-global--link--Color--hover: #1765cc;
+  --pf-v5-global--primary-color--100: #38e1ff;
+  --pf-v5-global--primary-color--200: #5eead4;
+  --pf-v5-global--link--Color: #38e1ff;
+  --pf-v5-global--link--Color--hover: #5eead4;
+  --pf-v5-global--Color--100: #e2e8f0;
+  --pf-v5-global--Color--200: #94a3b8;
+  --pf-v5-global--Color--300: #94a3b8;
+  --pf-v5-c-login__main--BorderTopColor: rgb(255 255 255 / 0.12);
+  --pf-v5-c-login__main--BorderTopWidth: 1px;
   --pf-v5-global--FontFamily--text: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
-  --pf-v5-global--FontFamily--heading: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+  --pf-v5-global--FontFamily--heading: "Space Grotesk", "Inter", "Segoe UI", system-ui, sans-serif;
 }
 
 html.login-pf body,
 .pf-v5-c-login {
-  background: #f8f9fa;
-  background-image: none;
+  background-color: #04070c;
+  background-image:
+    radial-gradient(50rem 30rem at 85% -10%, rgb(56 225 255 / 0.12), transparent 60%),
+    radial-gradient(40rem 26rem at -10% 90%, rgb(94 234 212 / 0.07), transparent 60%),
+    linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: auto, auto, 56px 56px, 56px 56px;
+  animation: resolve-grid 24s linear infinite;
+}
+@keyframes resolve-grid {
+  to {
+    background-position: 0 0, 0 0, 56px 56px, 56px 56px;
+  }
+}
+
+.pf-v5-c-login,
+.pf-v5-c-login__main,
+.pf-v5-c-login__main-body,
+.pf-v5-c-login__main-header,
+.pf-v5-c-form__label-text,
+#kc-content-wrapper {
+  color: #e2e8f0;
 }
 
 .pf-v5-c-login__main {
-  border: 1px solid #dadce0;
-  border-radius: 28px;
-  box-shadow: 0 1px 3px rgb(60 64 67 / 0.3), 0 4px 8px 3px rgb(60 64 67 / 0.15);
+  background: rgb(255 255 255 / 0.04);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px -30px rgb(0 0 0 / 0.9), 0 1px 0 rgb(255 255 255 / 0.06) inset;
   overflow: hidden;
+}
+
+/* The default blue strip is a border on the header: make it the accent gradient. */
+.pf-v5-c-login__main-header {
+  border-top: 2px solid #38e1ff;
+  border-image: linear-gradient(90deg, #38e1ff, #5eead4) 1;
+}
+
+.pf-v5-c-button.pf-m-control {
+  background: rgb(255 255 255 / 0.08);
+  color: #cbd5e1;
+  border-color: rgb(255 255 255 / 0.18);
 }
 
 .pf-v5-c-login__main-header .pf-v5-c-title {
   font-weight: 500;
+  color: #fff;
 }
 
 .pf-v5-c-form-control {
-  border-radius: 8px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.05);
+}
+.pf-v5-c-form-control:focus-within {
+  --pf-v5-c-form-control--after--BorderBottomColor: #38e1ff;
 }
 
 .pf-v5-c-button.pf-m-primary {
   border-radius: 999px;
-  min-height: 44px;
-  font-weight: 500;
-  background-color: #1a73e8;
+  min-height: 46px;
+  font-weight: 600;
+  color: #04141a;
+  background: linear-gradient(100deg, #38e1ff, #5eead4);
+  transition: box-shadow 150ms ease, transform 120ms ease;
 }
-
 .pf-v5-c-button.pf-m-primary:hover {
-  background-color: #1765cc;
+  background: linear-gradient(100deg, #38e1ff, #5eead4);
+  box-shadow: 0 0 28px -4px rgb(56 225 255 / 0.55);
+}
+.pf-v5-c-button.pf-m-primary:active {
+  transform: translateY(1px);
 }
 
+/* Wordmark and a one-line reminder of what this signs you in to. */
 #kc-header-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
   font-size: 0;
+  line-height: 1.2;
+  text-transform: none;
+  letter-spacing: normal;
 }
-
 #kc-header-wrapper::before {
   content: "Resolve";
-  font-size: 28px;
+  font-family: "Space Grotesk", "Inter", system-ui, sans-serif;
+  font-size: 30px;
   font-weight: 500;
-  color: #1a73e8;
+  color: #fff;
+}
+#kc-header-wrapper::after {
+  content: "Editorial answers, cited and current.";
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #5eead4;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-reduced-motion: reduce) {
   html.login-pf body,
   .pf-v5-c-login {
-    background: #202124;
-  }
-  .pf-v5-c-login__main {
-    border-color: #3c4043;
-    background: #292a2d;
-  }
-  #kc-header-wrapper::before {
-    color: #8ab4f8;
+    animation: none;
   }
 }

@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router"
-import { useEffect } from "react"
 import { useAuth } from "react-oidc-context"
 
+import { Landing } from "@/components/Landing/Landing"
 import { AppShell } from "@/components/Shell/AppShell"
 import { Button } from "@/components/ui/button"
 
@@ -17,32 +17,27 @@ function FullPageMessage({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Renders children only for signed-in users; otherwise starts the OIDC flow. */
+/** Signed-in users get the app; everyone else gets the front page. */
 function RequireSignIn({ children }: { children: React.ReactNode }) {
   const auth = useAuth()
-  const shouldRedirect =
-    !auth.isLoading &&
-    !auth.isAuthenticated &&
-    !auth.activeNavigator &&
-    !auth.error
-
-  useEffect(() => {
-    if (shouldRedirect) {
-      const returnTo = window.location.pathname + window.location.search
-      void auth.signinRedirect({ state: returnTo })
-    }
-  }, [shouldRedirect, auth])
+  const signIn = () => {
+    const returnTo = window.location.pathname + window.location.search
+    void auth.signinRedirect({ state: returnTo })
+  }
 
   if (auth.error) {
     return (
       <FullPageMessage>
         <p>Sign-in failed: {auth.error.message}</p>
-        <Button onClick={() => void auth.signinRedirect()}>Try again</Button>
+        <Button onClick={signIn}>Try again</Button>
       </FullPageMessage>
     )
   }
-  if (!auth.isAuthenticated) {
+  if (auth.isLoading || auth.activeNavigator) {
     return <FullPageMessage>Signing you in…</FullPageMessage>
+  }
+  if (!auth.isAuthenticated) {
+    return <Landing onSignIn={signIn} />
   }
   return <>{children}</>
 }

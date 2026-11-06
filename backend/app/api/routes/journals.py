@@ -47,12 +47,30 @@ def read_journal(
     )
 
 
+@router.get("/{journal_id}/members", response_model=list[MemberPublic])
+def list_members(
+    session: SessionDep, scope: ScopeDep, journal_id: uuid.UUID
+) -> list[MemberPublic]:
+    """Lists the journal's members (administrators only)."""
+    return journals.list_members(session, scope, journal_id)
+
+
 @router.put("/{journal_id}/members", response_model=MemberPublic)
 def set_member(
     session: SessionDep, scope: ScopeDep, journal_id: uuid.UUID, body: MemberUpsert
 ) -> MemberPublic:
     """Adds a member to the journal or changes their role."""
     return journals.set_member(session, scope, journal_id, body.email, body.role)
+
+
+@router.delete(
+    "/{journal_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def remove_member(
+    session: SessionDep, scope: ScopeDep, journal_id: uuid.UUID, user_id: uuid.UUID
+) -> None:
+    """Removes a member from the journal (administrators only)."""
+    journals.remove_member(session, scope, journal_id, user_id)
 
 
 @router.post(

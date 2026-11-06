@@ -112,6 +112,7 @@ services:
       dockerfile: backend/Dockerfile
       args:
         VITE_OIDC_AUTHORITY: ${OIDC_ISSUER:?Variable not set}
+        VITE_ACCESS_REQUEST_URL: ${ACCESS_REQUEST_URL:-}
     labels:
       # Enable Traefik for this service
       - traefik.enable=true

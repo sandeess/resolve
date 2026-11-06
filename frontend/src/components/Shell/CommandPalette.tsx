@@ -11,6 +11,7 @@ import {
   Search,
   Sparkles,
   Sun,
+  Users,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -44,7 +45,7 @@ export function CommandPalette({
   }
   const { data: journals } = useJournals()
   const { setTheme } = useTheme()
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
   const [text, setText] = useState("")
 
   // Ask goes to the journal you are in, else the one you used last, else the first.
@@ -133,6 +134,11 @@ export function CommandPalette({
                     ["Tickets", LifeBuoy, "/journals/$journalId/tickets"],
                     ["Documents", FileText, "/journals/$journalId/documents"],
                     ["Articles", BookOpen, "/journals/$journalId/articles"],
+                    ...(user?.is_admin
+                      ? ([
+                          ["People", Users, "/journals/$journalId/members"],
+                        ] as const)
+                      : []),
                   ] as const
                 ).map(([label, Icon, to]) => (
                   <Command.Item

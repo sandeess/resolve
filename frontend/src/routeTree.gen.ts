@@ -16,6 +16,7 @@ import { Route as LayoutJournalsJournalIdIndexRouteImport } from './routes/_layo
 import { Route as LayoutJournalsJournalIdArticlesRouteImport } from './routes/_layout/journals.$journalId.articles'
 import { Route as LayoutJournalsJournalIdAskRouteImport } from './routes/_layout/journals.$journalId.ask'
 import { Route as LayoutJournalsJournalIdDocumentsRouteImport } from './routes/_layout/journals.$journalId.documents'
+import { Route as LayoutJournalsJournalIdMembersRouteImport } from './routes/_layout/journals.$journalId.members'
 import { Route as LayoutJournalsJournalIdTicketsRouteImport } from './routes/_layout/journals.$journalId.tickets'
 import { Route as LayoutJournalsJournalIdTicketsIndexRouteImport } from './routes/_layout/journals.$journalId.tickets.index'
 import { Route as LayoutJournalsJournalIdTicketsTicketIdRouteImport } from './routes/_layout/journals.$journalId.tickets.$ticketId'
@@ -58,6 +59,12 @@ const LayoutJournalsJournalIdDocumentsRoute =
     path: '/documents',
     getParentRoute: () => LayoutJournalsJournalIdRoute,
   } as any)
+const LayoutJournalsJournalIdMembersRoute =
+  LayoutJournalsJournalIdMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => LayoutJournalsJournalIdRoute,
+  } as any)
 const LayoutJournalsJournalIdTicketsRoute =
   LayoutJournalsJournalIdTicketsRouteImport.update({
     id: '/tickets',
@@ -83,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/journals/$journalId/articles': typeof LayoutJournalsJournalIdArticlesRoute
   '/journals/$journalId/ask': typeof LayoutJournalsJournalIdAskRoute
   '/journals/$journalId/documents': typeof LayoutJournalsJournalIdDocumentsRoute
+  '/journals/$journalId/members': typeof LayoutJournalsJournalIdMembersRoute
   '/journals/$journalId/tickets': typeof LayoutJournalsJournalIdTicketsRouteWithChildren
   '/journals/$journalId/': typeof LayoutJournalsJournalIdIndexRoute
   '/journals/$journalId/tickets/$ticketId': typeof LayoutJournalsJournalIdTicketsTicketIdRoute
@@ -93,6 +101,7 @@ export interface FileRoutesByTo {
   '/journals/$journalId/articles': typeof LayoutJournalsJournalIdArticlesRoute
   '/journals/$journalId/ask': typeof LayoutJournalsJournalIdAskRoute
   '/journals/$journalId/documents': typeof LayoutJournalsJournalIdDocumentsRoute
+  '/journals/$journalId/members': typeof LayoutJournalsJournalIdMembersRoute
   '/journals/$journalId': typeof LayoutJournalsJournalIdIndexRoute
   '/journals/$journalId/tickets/$ticketId': typeof LayoutJournalsJournalIdTicketsTicketIdRoute
   '/journals/$journalId/tickets': typeof LayoutJournalsJournalIdTicketsIndexRoute
@@ -105,6 +114,7 @@ export interface FileRoutesById {
   '/_layout/journals/$journalId/articles': typeof LayoutJournalsJournalIdArticlesRoute
   '/_layout/journals/$journalId/ask': typeof LayoutJournalsJournalIdAskRoute
   '/_layout/journals/$journalId/documents': typeof LayoutJournalsJournalIdDocumentsRoute
+  '/_layout/journals/$journalId/members': typeof LayoutJournalsJournalIdMembersRoute
   '/_layout/journals/$journalId/tickets': typeof LayoutJournalsJournalIdTicketsRouteWithChildren
   '/_layout/journals/$journalId/': typeof LayoutJournalsJournalIdIndexRoute
   '/_layout/journals/$journalId/tickets/$ticketId': typeof LayoutJournalsJournalIdTicketsTicketIdRoute
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/journals/$journalId/articles'
     | '/journals/$journalId/ask'
     | '/journals/$journalId/documents'
+    | '/journals/$journalId/members'
     | '/journals/$journalId/tickets'
     | '/journals/$journalId/'
     | '/journals/$journalId/tickets/$ticketId'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/journals/$journalId/articles'
     | '/journals/$journalId/ask'
     | '/journals/$journalId/documents'
+    | '/journals/$journalId/members'
     | '/journals/$journalId'
     | '/journals/$journalId/tickets/$ticketId'
     | '/journals/$journalId/tickets'
@@ -139,6 +151,7 @@ export interface FileRouteTypes {
     | '/_layout/journals/$journalId/articles'
     | '/_layout/journals/$journalId/ask'
     | '/_layout/journals/$journalId/documents'
+    | '/_layout/journals/$journalId/members'
     | '/_layout/journals/$journalId/tickets'
     | '/_layout/journals/$journalId/'
     | '/_layout/journals/$journalId/tickets/$ticketId'
@@ -200,6 +213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutJournalsJournalIdDocumentsRouteImport
       parentRoute: typeof LayoutJournalsJournalIdRoute
     }
+    '/_layout/journals/$journalId/members': {
+      id: '/_layout/journals/$journalId/members'
+      path: '/members'
+      fullPath: '/journals/$journalId/members'
+      preLoaderRoute: typeof LayoutJournalsJournalIdMembersRouteImport
+      parentRoute: typeof LayoutJournalsJournalIdRoute
+    }
     '/_layout/journals/$journalId/tickets': {
       id: '/_layout/journals/$journalId/tickets'
       path: '/tickets'
@@ -246,6 +266,7 @@ interface LayoutJournalsJournalIdRouteChildren {
   LayoutJournalsJournalIdArticlesRoute: typeof LayoutJournalsJournalIdArticlesRoute
   LayoutJournalsJournalIdAskRoute: typeof LayoutJournalsJournalIdAskRoute
   LayoutJournalsJournalIdDocumentsRoute: typeof LayoutJournalsJournalIdDocumentsRoute
+  LayoutJournalsJournalIdMembersRoute: typeof LayoutJournalsJournalIdMembersRoute
   LayoutJournalsJournalIdTicketsRoute: typeof LayoutJournalsJournalIdTicketsRouteWithChildren
   LayoutJournalsJournalIdIndexRoute: typeof LayoutJournalsJournalIdIndexRoute
 }
@@ -256,6 +277,7 @@ const LayoutJournalsJournalIdRouteChildren: LayoutJournalsJournalIdRouteChildren
     LayoutJournalsJournalIdAskRoute: LayoutJournalsJournalIdAskRoute,
     LayoutJournalsJournalIdDocumentsRoute:
       LayoutJournalsJournalIdDocumentsRoute,
+    LayoutJournalsJournalIdMembersRoute: LayoutJournalsJournalIdMembersRoute,
     LayoutJournalsJournalIdTicketsRoute:
       LayoutJournalsJournalIdTicketsRouteWithChildren,
     LayoutJournalsJournalIdIndexRoute: LayoutJournalsJournalIdIndexRoute,

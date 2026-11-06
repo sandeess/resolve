@@ -45,7 +45,9 @@ class Hit:
     version_no: int | None = None
     ticket_id: uuid.UUID | None = None
     ticket_number: int | None = None
-    dated: str | None = None  # ISO timestamp (to the minute) of the ticket or document version
+    dated: str | None = (
+        None  # ISO timestamp (to the minute) of the ticket or document version
+    )
 
 
 def hybrid_search(

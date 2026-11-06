@@ -10,6 +10,14 @@ from app.domain.errors import PermissionDeniedError
 from app.domain.policy import Action, Scope
 from app.models import JournalMember, User, utc_now
 
+#: `User.sub` of someone an administrator added by email before they ever signed
+#: in. At their first sign-in the row is claimed (the sub is replaced by theirs).
+PENDING_SUB_PREFIX = "pending:"
+
+
+def pending_sub(email: str) -> str:
+    return f"{PENDING_SUB_PREFIX}{email.strip().lower()}"
+
 
 def provision_user(session: Session, claims: TokenClaims, *, admin_role: str) -> User:
     """Returns the user for `claims`, creating or refreshing the row as needed.
@@ -20,6 +28,7 @@ def provision_user(session: Session, claims: TokenClaims, *, admin_role: str) ->
     # Roles unknown (no role claim): keep whatever is stored, never demote.
     admin_claim = None if claims.roles is None else admin_role in claims.roles
     is_admin = bool(admin_claim)
+    _claim_pending(session, claims)
     session.execute(
         insert(User)
         .values(
@@ -46,6 +55,19 @@ def provision_user(session: Session, claims: TokenClaims, *, admin_role: str) ->
         session.commit()
         session.refresh(user)
     return user
+
+
+def _claim_pending(session: Session, claims: TokenClaims) -> None:
+    """Hands memberships added by email to the person who now signs in with it."""
+    if session.exec(select(User.id).where(User.sub == claims.sub)).first():
+        return
+    pending = session.exec(
+        select(User).where(User.sub == pending_sub(claims.email))
+    ).first()
+    if pending is not None:
+        pending.sub = claims.sub
+        session.add(pending)
+        session.commit()
 
 
 def build_scope(session: Session, user: User) -> Scope:

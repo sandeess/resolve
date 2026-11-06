@@ -130,6 +130,9 @@ class MemberPublic(SQLModel):
     user_id: uuid.UUID
     email: EmailStr
     role: Role
+    full_name: str | None = None
+    # Added by email before the person has signed in; they claim it at first sign-in.
+    pending: bool = False
 
 
 # --- Articles ---------------------------------------------------------------

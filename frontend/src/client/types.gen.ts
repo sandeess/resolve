@@ -300,6 +300,14 @@ export type MemberPublic = {
      */
     email: string;
     role: Role;
+    /**
+     * Full Name
+     */
+    full_name?: string | null;
+    /**
+     * Pending
+     */
+    pending?: boolean;
 };
 
 /**
@@ -728,6 +736,38 @@ export type journalsReadJournalResponses = {
 
 export type journalsReadJournalResponse = journalsReadJournalResponses[keyof journalsReadJournalResponses];
 
+export type journalsListMembersData = {
+    body?: never;
+    path: {
+        /**
+         * Journal Id
+         */
+        journal_id: string;
+    };
+    query?: never;
+    url: '/api/v1/journals/{journal_id}/members';
+};
+
+export type journalsListMembersErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type journalsListMembersError = journalsListMembersErrors[keyof journalsListMembersErrors];
+
+export type journalsListMembersResponses = {
+    /**
+     * Response Journals-List Members
+     *
+     * Successful Response
+     */
+    200: Array<MemberPublic>;
+};
+
+export type journalsListMembersResponse = journalsListMembersResponses[keyof journalsListMembersResponses];
+
 export type journalsSetMemberData = {
     body: MemberUpsert;
     path: {
@@ -757,6 +797,40 @@ export type journalsSetMemberResponses = {
 };
 
 export type journalsSetMemberResponse = journalsSetMemberResponses[keyof journalsSetMemberResponses];
+
+export type journalsRemoveMemberData = {
+    body?: never;
+    path: {
+        /**
+         * Journal Id
+         */
+        journal_id: string;
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/api/v1/journals/{journal_id}/members/{user_id}';
+};
+
+export type journalsRemoveMemberErrors = {
+    /**
+     * Validation Error
+     */
+    422: HTTPValidationError;
+};
+
+export type journalsRemoveMemberError = journalsRemoveMemberErrors[keyof journalsRemoveMemberErrors];
+
+export type journalsRemoveMemberResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type journalsRemoveMemberResponse = journalsRemoveMemberResponses[keyof journalsRemoveMemberResponses];
 
 export type journalsListArticlesData = {
     body?: never;

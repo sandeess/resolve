@@ -123,6 +123,7 @@ services:
       dockerfile: backend/Dockerfile
       args:
         VITE_OIDC_AUTHORITY: https://auth.${DOMAIN}/realms/resolve
+        VITE_ACCESS_REQUEST_URL: ${ACCESS_REQUEST_URL:-}
     command: ["bash", "scripts/prestart.sh"]
     depends_on:
       db:

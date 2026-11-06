@@ -14,6 +14,7 @@ COPY ./frontend /app/frontend
 ARG VITE_API_URL=
 ARG VITE_OIDC_AUTHORITY
 ARG VITE_OIDC_CLIENT_ID=resolve-web
+ARG VITE_ACCESS_REQUEST_URL=
 
 RUN npm run build
 

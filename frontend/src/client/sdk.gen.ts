@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { askAskJournalData, askAskJournalErrors, askAskJournalResponses, askPrefetchQuestionData, askPrefetchQuestionErrors, askPrefetchQuestionResponses, documentsDownloadVersionData, documentsDownloadVersionErrors, documentsDownloadVersionResponses, documentsListDocumentsData, documentsListDocumentsErrors, documentsListDocumentsResponses, documentsListVersionsData, documentsListVersionsErrors, documentsListVersionsResponses, documentsReindexVersionData, documentsReindexVersionErrors, documentsReindexVersionResponses, documentsUploadDocumentData, documentsUploadDocumentErrors, documentsUploadDocumentResponses, journalsCreateArticleData, journalsCreateArticleErrors, journalsCreateArticleResponses, journalsCreateJournalData, journalsCreateJournalErrors, journalsCreateJournalResponses, journalsListArticlesData, journalsListArticlesErrors, journalsListArticlesResponses, journalsListJournalsData, journalsListJournalsResponses, journalsReadJournalData, journalsReadJournalErrors, journalsReadJournalResponses, journalsSetMemberData, journalsSetMemberErrors, journalsSetMemberResponses, meReadMeData, meReadMeResponses, ticketsAddMessageData, ticketsAddMessageErrors, ticketsAddMessageResponses, ticketsApproveTicketData, ticketsApproveTicketErrors, ticketsApproveTicketResponses, ticketsCreateTicketData, ticketsCreateTicketErrors, ticketsCreateTicketResponses, ticketsListTicketsData, ticketsListTicketsErrors, ticketsListTicketsResponses, ticketsReadTicketData, ticketsReadTicketErrors, ticketsReadTicketResponses, ticketsReopenTicketData, ticketsReopenTicketErrors, ticketsReopenTicketResponses, ticketsResolveTicketData, ticketsResolveTicketErrors, ticketsResolveTicketResponses, ticketsUpdateTicketData, ticketsUpdateTicketErrors, ticketsUpdateTicketResponses, utilsHealthCheckData, utilsHealthCheckResponses } from './types.gen';
+import type { askAskJournalData, askAskJournalErrors, askAskJournalResponses, askPrefetchQuestionData, askPrefetchQuestionErrors, askPrefetchQuestionResponses, documentsDownloadVersionData, documentsDownloadVersionErrors, documentsDownloadVersionResponses, documentsListDocumentsData, documentsListDocumentsErrors, documentsListDocumentsResponses, documentsListVersionsData, documentsListVersionsErrors, documentsListVersionsResponses, documentsReindexVersionData, documentsReindexVersionErrors, documentsReindexVersionResponses, documentsUploadDocumentData, documentsUploadDocumentErrors, documentsUploadDocumentResponses, journalsCreateArticleData, journalsCreateArticleErrors, journalsCreateArticleResponses, journalsCreateJournalData, journalsCreateJournalErrors, journalsCreateJournalResponses, journalsListArticlesData, journalsListArticlesErrors, journalsListArticlesResponses, journalsListJournalsData, journalsListJournalsResponses, journalsListMembersData, journalsListMembersErrors, journalsListMembersResponses, journalsReadJournalData, journalsReadJournalErrors, journalsReadJournalResponses, journalsRemoveMemberData, journalsRemoveMemberErrors, journalsRemoveMemberResponses, journalsSetMemberData, journalsSetMemberErrors, journalsSetMemberResponses, meReadMeData, meReadMeResponses, ticketsAddMessageData, ticketsAddMessageErrors, ticketsAddMessageResponses, ticketsApproveTicketData, ticketsApproveTicketErrors, ticketsApproveTicketResponses, ticketsCreateTicketData, ticketsCreateTicketErrors, ticketsCreateTicketResponses, ticketsListTicketsData, ticketsListTicketsErrors, ticketsListTicketsResponses, ticketsReadTicketData, ticketsReadTicketErrors, ticketsReadTicketResponses, ticketsReopenTicketData, ticketsReopenTicketErrors, ticketsReopenTicketResponses, ticketsResolveTicketData, ticketsResolveTicketErrors, ticketsResolveTicketResponses, ticketsUpdateTicketData, ticketsUpdateTicketErrors, ticketsUpdateTicketResponses, utilsHealthCheckData, utilsHealthCheckResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -80,6 +80,20 @@ export class JournalsService {
     }
     
     /**
+     * List Members
+     *
+     * Lists the journal's members (administrators only).
+     */
+    public static listMembers<ThrowOnError extends boolean = true>(options: Options<journalsListMembersData, ThrowOnError>) {
+        return (options.client ?? client).get<journalsListMembersResponses, journalsListMembersErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/journals/{journal_id}/members',
+            ...options
+        });
+    }
+    
+    /**
      * Set Member
      *
      * Adds a member to the journal or changes their role.
@@ -94,6 +108,19 @@ export class JournalsService {
                 'Content-Type': 'application/json',
                 ...options.headers
             }
+        });
+    }
+    
+    /**
+     * Remove Member
+     *
+     * Removes a member from the journal (administrators only).
+     */
+    public static removeMember<ThrowOnError extends boolean = true>(options: Options<journalsRemoveMemberData, ThrowOnError>) {
+        return (options.client ?? client).delete<journalsRemoveMemberResponses, journalsRemoveMemberErrors, ThrowOnError>({
+            security: [{ scheme: 'bearer', type: 'http' }],
+            url: '/api/v1/journals/{journal_id}/members/{user_id}',
+            ...options
         });
     }
     

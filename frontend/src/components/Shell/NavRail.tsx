@@ -6,9 +6,11 @@ import {
   LifeBuoy,
   type LucideIcon,
   Sparkles,
+  Users,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import useAuth from "@/hooks/useAuth"
 import { useOpenTicketCount } from "@/lib/journals"
 import { cn } from "@/lib/utils"
 import { JournalSwitcher } from "./JournalSwitcher"
@@ -29,6 +31,7 @@ const activeClass = "bg-secondary text-secondary-foreground hover:bg-secondary"
 export function NavRail({ onNavigate }: { onNavigate?: () => void }) {
   const { journalId } = useParams({ strict: false }) as { journalId?: string }
   const open = useOpenTicketCount(journalId)
+  const { user } = useAuth()
 
   const items: Item[] = journalId
     ? [
@@ -57,6 +60,16 @@ export function NavRail({ onNavigate }: { onNavigate?: () => void }) {
           to: "/journals/$journalId/articles",
           params: { journalId },
         },
+        ...(user?.is_admin
+          ? [
+              {
+                label: "People",
+                icon: Users,
+                to: "/journals/$journalId/members",
+                params: { journalId },
+              },
+            ]
+          : []),
       ]
     : []
 
