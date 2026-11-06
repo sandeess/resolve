@@ -99,14 +99,25 @@ Then `/mcp` → **resolve** → **Authenticate**. Sign in as a user who belongs 
 
 ## Operations
 
-* **Update:** `git pull && docker compose --env-file .env.prod -f compose.prod.yml up -d --build`. Migrations run automatically (`prestart`).
-* **Backups:** nightly database dump and a copy of the uploads volume, kept off the server:
+* **Update:** `cd /opt/resolve && sudo bash deploy/update.sh` pulls the latest code, rebuilds, restarts and prints the health. Migrations run automatically (`prestart`) and are safe to re-run.
+* **Backups:** `sudo bash deploy/backup.sh` writes the app database, Keycloak's database (your users) and the uploaded files to `/var/backups/resolve`, checks that the dumps are not empty, and removes copies older than 14 days. Run it nightly:
   ```bash
-  docker compose --env-file .env.prod -f compose.prod.yml exec -T db pg_dump -U postgres app | gzip > app-$(date +%F).sql.gz
-  docker compose --env-file .env.prod -f compose.prod.yml exec -T db pg_dump -U postgres keycloak | gzip > keycloak-$(date +%F).sql.gz
-  docker run --rm -v resolve_app-files:/data -v "$PWD":/out alpine tar czf /out/files-$(date +%F).tgz -C /data .
+  echo '17 3 * * * root cd /opt/resolve && bash deploy/backup.sh >> /var/log/resolve-backup.log 2>&1' | sudo tee /etc/cron.d/resolve-backup
   ```
-  Restore by piping a dump into `psql` on a fresh database, then restoring the files volume. Try a restore once before you need it.
+  A backup on the same disk does not survive losing the server: also copy `/var/backups/resolve` somewhere else (your PC with `scp`, or object storage). The script was tested by restoring a dump into a scratch database.
+* **Restore** (replace `DATE` with the file's date; this overwrites current data):
+  ```bash
+  cd /opt/resolve
+  C="docker compose --env-file .env.prod -f compose.prod.yml"
+  $C stop backend worker mcp keycloak
+  $C exec -T db psql -U postgres -c "drop database app" -c "create database app"
+  $C exec -T db psql -U postgres -c "drop database keycloak" -c "create database keycloak"
+  zcat /var/backups/resolve/app-DATE.sql.gz      | $C exec -T db psql -U postgres -d app
+  zcat /var/backups/resolve/keycloak-DATE.sql.gz | $C exec -T db psql -U postgres -d keycloak
+  docker run --rm -v resolve_app-files:/data -v /var/backups/resolve:/in alpine sh -c "rm -rf /data/* && tar xzf /in/files-DATE.tgz -C /data"
+  $C up -d
+  ```
+  Practise it once on a spare copy before you need it.
 * **Rotate secrets:** edit `.env.prod`, then `up -d` again. Changing `POSTGRES_PASSWORD` also needs `ALTER USER postgres PASSWORD '...'` in the running database.
 * **Logs:** `docker compose --env-file .env.prod -f compose.prod.yml logs -f backend worker mcp`.
 
