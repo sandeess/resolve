@@ -10,6 +10,17 @@ Result: HTTPS on three subdomains of your domain (`sortitouthq.com` below), one 
 
 Only ports 80 and 443 are published. Traefik gets and renews Let's Encrypt certificates by itself. Keycloak's admin console and the `master` realm are reachable only from the server itself.
 
+## Fastest path: any Ubuntu VPS, one script
+
+Any VPS with 2 vCPU / 4 GB or more works (a 2 vCPU / 8 GB / 100 GB plan around 1,300 INR a month leaves plenty of room). Point the three DNS records at the server (section 2), then on the server:
+
+```bash
+git clone https://github.com/sandeess/resolve.git /opt/resolve
+cd /opt/resolve && sudo bash deploy/bootstrap-vps.sh
+```
+
+The script asks for your domain, email and DeepInfra key, installs Docker, a firewall and swap, generates every secret into `.env.prod` (root-only), builds the production realm and starts the stack. The sections below explain each step if you prefer to do it by hand.
+
 ## 1. Server
 
 **On Google Cloud** (what `deploy/gcp/create-vm.sh` automates): install the [gcloud CLI](https://cloud.google.com/sdk/docs/install), run `gcloud auth login`, make sure the project has billing enabled, then
