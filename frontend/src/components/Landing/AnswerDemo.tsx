@@ -90,7 +90,7 @@ export function AnswerDemo() {
             type="button"
             onClick={() => setPaused((p) => !p)}
             aria-label={paused ? "Play the example" : "Pause the example"}
-            className="rounded-full p-1.5 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+            className="-m-2 rounded-full p-3 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
           >
             {paused ? (
               <Play className="size-4" />

@@ -83,16 +83,8 @@ export function Landing({ onSignIn }: Props) {
           <LogoMark className="size-8" /> Resolve
         </span>
         <nav className="flex items-center gap-2" aria-label="Account">
-          <RequestAccess>
-            {(open) => (
-              <button
-                type="button"
-                onClick={open}
-                className="landing-link hidden px-4 py-2 text-sm sm:inline-block"
-              >
-                Request access
-              </button>
-            )}
+          <RequestAccess className="landing-link hidden px-4 py-3 text-sm min-[420px]:inline-block">
+            Request access
           </RequestAccess>
           <button
             type="button"
@@ -137,16 +129,8 @@ export function Landing({ onSignIn }: Props) {
                 >
                   Sign in <ArrowRight className="size-4" />
                 </button>
-                <RequestAccess>
-                  {(open) => (
-                    <button
-                      type="button"
-                      onClick={open}
-                      className="landing-btn landing-btn-ghost"
-                    >
-                      Request access
-                    </button>
-                  )}
+                <RequestAccess className="landing-btn landing-btn-ghost">
+                  Request access
                 </RequestAccess>
               </div>
               <p className="mt-8 max-w-md font-mono text-xs leading-relaxed text-slate-400">
@@ -265,16 +249,8 @@ export function Landing({ onSignIn }: Props) {
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <RequestAccess>
-                  {(open) => (
-                    <button
-                      type="button"
-                      onClick={open}
-                      className="landing-btn landing-btn-primary"
-                    >
-                      Request access <ArrowRight className="size-4" />
-                    </button>
-                  )}
+                <RequestAccess className="landing-btn landing-btn-primary">
+                  Request access <ArrowRight className="size-4" />
                 </RequestAccess>
                 <button
                   type="button"
@@ -296,7 +272,7 @@ export function Landing({ onSignIn }: Props) {
             href={REPO_URL}
             target="_blank"
             rel="noreferrer"
-            className="landing-link flex items-center gap-2"
+            className="landing-link flex items-center gap-2 py-3"
           >
             <Code2 className="size-4" /> Source on GitHub
           </a>

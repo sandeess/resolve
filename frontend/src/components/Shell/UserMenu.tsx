@@ -23,7 +23,7 @@ export function UserMenu() {
         <PersonAvatar
           name={user.full_name}
           email={user.email}
-          className="size-9 text-sm"
+          className="size-9 pointer-coarse:size-11 text-sm"
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-72 rounded-2xl p-2">

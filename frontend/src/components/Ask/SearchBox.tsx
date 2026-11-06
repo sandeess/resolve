@@ -67,7 +67,12 @@ export const SearchBox = forwardRef<HTMLInputElement, Props>(function SearchBox(
         <Search className="size-5 shrink-0 text-muted-foreground" />
         <input
           ref={(node) => {
-            if (node && autoFocus && !node.dataset.focused) {
+            if (
+              node &&
+              autoFocus &&
+              !node.dataset.focused &&
+              !window.matchMedia("(pointer: coarse)").matches
+            ) {
               node.dataset.focused = "1"
               node.focus()
             }
@@ -103,7 +108,9 @@ export const SearchBox = forwardRef<HTMLInputElement, Props>(function SearchBox(
           aria-label="Ask"
           className={cn(
             "flex shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-[opacity,transform,box-shadow] hover:shadow-e1 active:scale-95 disabled:pointer-events-none disabled:opacity-40",
-            hero ? "size-10" : "size-9",
+            hero
+              ? "size-10 pointer-coarse:size-11"
+              : "size-9 pointer-coarse:size-11",
           )}
         >
           <ArrowRight className="size-5" />
@@ -116,7 +123,7 @@ export const SearchBox = forwardRef<HTMLInputElement, Props>(function SearchBox(
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex h-8 items-center gap-1.5 rounded-full border bg-card px-3.5 text-sm text-muted-foreground hover:bg-accent"
+                className="flex h-8 items-center gap-1.5 rounded-full border bg-card px-3.5 text-sm text-muted-foreground hover:bg-accent pointer-coarse:h-11"
               >
                 {selected?.label ?? "Whole journal"}
                 <ChevronDown className="size-4" />

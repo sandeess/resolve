@@ -337,7 +337,7 @@ export default function DocumentsPanel({
                 title={k.hint}
                 onClick={() => setKind(k.value)}
                 className={cn(
-                  "h-9 rounded-full border px-4 text-sm transition-colors",
+                  "h-9 rounded-full border px-4 text-sm transition-colors pointer-coarse:h-11",
                   kind === k.value
                     ? "border-transparent bg-secondary font-medium text-secondary-foreground"
                     : "hover:bg-accent",

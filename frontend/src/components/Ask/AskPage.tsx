@@ -191,7 +191,7 @@ export function AskPage({
               key={s}
               type="button"
               onClick={() => ask(s)}
-              className="flex h-9 items-center gap-2 rounded-full border bg-card px-4 text-sm transition-colors hover:bg-accent"
+              className="flex h-9 items-center gap-2 rounded-full border bg-card px-4 text-sm transition-colors hover:bg-accent pointer-coarse:h-11"
             >
               <Sparkles className="size-3.5 text-primary" />
               {s}

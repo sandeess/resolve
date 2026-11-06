@@ -67,6 +67,28 @@ html.login-pf body,
   color: #fff;
 }
 
+/* Typed text must be readable on the dark card: Keycloak's default input text is near-black. */
+html.login-pf { color-scheme: dark; }
+.pf-v5-c-form-control,
+.pf-v5-c-form-control input,
+.pf-v5-c-form-control select,
+.pf-v5-c-form-control textarea,
+input.pf-v5-c-form-control {
+  color: #f1f5f9;
+  caret-color: #38e1ff;
+}
+.pf-v5-c-form-control input::placeholder,
+.pf-v5-c-form-control textarea::placeholder { color: #64748b; opacity: 1; }
+/* Browser autofill paints its own light background; keep it dark with light text. */
+.pf-v5-c-form-control input:-webkit-autofill,
+.pf-v5-c-form-control input:-webkit-autofill:hover,
+.pf-v5-c-form-control input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f1f5f9;
+  caret-color: #f1f5f9;
+  box-shadow: 0 0 0 1000px #0e141c inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 .pf-v5-c-form-control {
   border-radius: 10px;
   background: rgb(255 255 255 / 0.05);
@@ -116,6 +138,37 @@ html.login-pf body,
   font-weight: 400;
   letter-spacing: 0.02em;
   color: #5eead4;
+}
+
+/* Messages ("Invalid username or password", "Please re-authenticate"...) on the dark card. */
+.pf-v5-c-alert.pf-m-inline {
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-left-width: 4px;
+  border-radius: 10px;
+  color: #e2e8f0;
+}
+.pf-v5-c-alert.pf-m-inline .pf-v5-c-alert__title,
+.pf-v5-c-alert.pf-m-inline .pf-v5-c-alert__description { color: #e2e8f0; }
+.pf-v5-c-alert.pf-m-inline.pf-m-info { border-left-color: #38e1ff; }
+.pf-v5-c-alert.pf-m-inline.pf-m-success { border-left-color: #5eead4; background: rgb(94 234 212 / 0.08); }
+.pf-v5-c-alert.pf-m-inline.pf-m-warning { border-left-color: #f59e0b; background: rgb(245 158 11 / 0.1); }
+.pf-v5-c-alert.pf-m-inline.pf-m-danger { border-left-color: #fb7185; background: rgb(251 113 133 / 0.12); }
+.pf-v5-c-alert.pf-m-inline.pf-m-danger .pf-v5-c-alert__title { color: #fecdd3; }
+.pf-v5-c-alert__icon { color: #38e1ff; }
+.pf-m-danger .pf-v5-c-alert__icon { color: #fb7185; }
+.pf-m-warning .pf-v5-c-alert__icon { color: #f59e0b; }
+.pf-m-success .pf-v5-c-alert__icon { color: #5eead4; }
+.pf-v5-c-helper-text__item.pf-m-error .pf-v5-c-helper-text__item-text,
+.kc-feedback-text.pf-m-error { color: #fecdd3; }
+
+/* Phones: keep the card off the screen edges and make controls easy to tap. */
+@media (max-width: 40rem) {
+  .pf-v5-c-login__container { padding-inline: 12px; }
+  .pf-v5-c-login__main { margin-inline: 0; }
+  .pf-v5-c-form-control { min-height: 48px; }
+  .pf-v5-c-button.pf-m-primary { min-height: 52px; }
+  #kc-header-wrapper::before { font-size: 26px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -113,6 +113,7 @@ services:
       args:
         VITE_OIDC_AUTHORITY: ${OIDC_ISSUER:?Variable not set}
         VITE_ACCESS_REQUEST_URL: ${ACCESS_REQUEST_URL:-}
+        VITE_ACCESS_REQUEST_EMAIL: ${ACCESS_REQUEST_EMAIL:-}
     labels:
       # Enable Traefik for this service
       - traefik.enable=true

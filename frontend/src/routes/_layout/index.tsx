@@ -7,6 +7,7 @@ import CreateJournal from "@/components/Journals/CreateJournal"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import useAuth from "@/hooks/useAuth"
+import { useNarrow } from "@/hooks/useNarrow"
 import { lastJournal, useJournals } from "@/lib/journals"
 
 export const Route = createFileRoute("/_layout/")({
@@ -24,6 +25,7 @@ function greeting(): string {
 
 function Home() {
   const { user } = useAuth()
+  const narrow = useNarrow()
   const navigate = useNavigate()
   const { data, isLoading } = useJournals()
   const [question, setQuestion] = useState("")
@@ -67,7 +69,9 @@ function Home() {
             placeholder={
               journals.length === 0
                 ? "Join a journal to start asking"
-                : "Ask about a style rule, an author query, a manuscript..."
+                : narrow
+                  ? "Ask a question"
+                  : "Ask about a style rule, an author query, a manuscript..."
             }
             scope={
               journals.length > 1
@@ -84,7 +88,7 @@ function Home() {
             autoFocus
           />
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="hidden text-sm text-muted-foreground sm:block">
           Press <kbd className="rounded-md border px-1.5 py-0.5 text-xs">/</kbd>{" "}
           to search from anywhere
         </p>

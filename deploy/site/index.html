@@ -118,17 +118,28 @@
 
     /* Fixed navigation */
     .top {
-      position: fixed; inset: 0 0 auto 0; z-index: 20; height: 3.75rem;
+      position: fixed; inset: 0 0 auto 0; z-index: 20; min-height: 3.75rem;
       background: rgb(4 7 12 / .72); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line);
     }
-    .top .wrap { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .top .wrap { min-height: 3.75rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
     .mark { font: 650 1.12rem/1 var(--sans); letter-spacing: -.01em; text-decoration: none; }
     .mark b { color: var(--cyan); font-weight: 650; }
     .top nav { display: flex; align-items: center; gap: 1.5rem; font-size: .94rem; }
     .top nav a { color: var(--muted); text-decoration: none; transition: color .15s; }
     .top nav a:hover { color: #fff; }
     .top nav .btn { height: 2.3rem; padding: 0 1rem; font-size: .88rem; color: #04141a; }
-    @media (max-width: 40rem) { .top nav a:not(.btn) { display: none; } }
+    /* Phones: keep the links, as a compact second row under the logo and button. */
+    @media (max-width: 40rem) {
+      .top .wrap { padding-top: .35rem; }
+      .top nav { display: contents; }
+      .top nav a:not(.btn) { order: 3; padding: .55rem 0; font-size: .92rem; min-height: 2.75rem; display: inline-flex; align-items: center; }
+      .top nav a:not(.btn) + a:not(.btn) { margin-left: 1.4rem; }
+      .top nav .btn { order: 2; min-height: 2.75rem; }
+      .top .mark { order: 1; flex: 1 1 auto; padding: .7rem 0; }
+      .top .wrap::after { content: ""; flex-basis: 100%; order: 2; height: 0; }
+      html { scroll-padding-top: 7.5rem; }
+      .hero { padding-top: 8.5rem !important; }
+    }
 
     .eyebrow { font: 500 .76rem/1.3 var(--mono); letter-spacing: .17em; text-transform: uppercase; color: var(--cyan); }
     h1 { font: 720 clamp(2.7rem, 8.2vw, 5.4rem)/1.0 var(--sans); letter-spacing: -.035em; margin: 1.1rem 0 0; text-wrap: balance; }

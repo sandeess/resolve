@@ -196,7 +196,7 @@ export default function TicketsPanel({ journalId }: { journalId: string }) {
               aria-selected={active}
               onClick={() => setFilter(value)}
               className={cn(
-                "flex h-9 items-center gap-2 rounded-full border px-4 text-sm transition-colors",
+                "flex h-9 items-center gap-2 rounded-full border px-4 text-sm transition-colors pointer-coarse:h-11",
                 active
                   ? "border-transparent bg-secondary font-medium text-secondary-foreground"
                   : "hover:bg-accent",
