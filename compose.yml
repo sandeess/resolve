@@ -1,0 +1,179 @@
+services:
+
+  proxy:
+    image: traefik:v3.7
+    volumes:
+      # Add Docker as a mounted volume, so that Traefik can read the labels of other services
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      # Enable Docker in Traefik, so that it reads labels from Docker services
+      - --providers.docker
+      # Do not expose all Docker services, only the ones explicitly exposed
+      - --providers.docker.exposedbydefault=false
+      # Create an entrypoint "http" listening on port 80
+      - --entrypoints.http.address=:80
+      # Enable the access log, with HTTP requests
+      - --accesslog
+      # Enable the Traefik log, for configurations and errors
+      - --log
+
+  db:
+    image: pgvector/pgvector:pg18
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - app-db-data:/var/lib/postgresql
+      # Runs once on a fresh volume: creates Keycloak's database.
+      - ./deploy/postgres/init-keycloak.sql:/docker-entrypoint-initdb.d/init-keycloak.sql:ro
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Variable not set}
+      - POSTGRES_DB=app
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Variable not set}
+      # Public URL that ends up in the token `iss` claim and redirects.
+      KC_HOSTNAME: ${OIDC_PUBLIC_URL:-http://localhost:8081}
+      KC_HTTP_ENABLED: "true"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:?Variable not set}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./deploy/keycloak/realm-export.json:/opt/keycloak/data/import/realm.json:ro
+      - ./deploy/keycloak/themes/resolve:/opt/keycloak/themes/resolve:ro
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    command: ["--config", "/app/config.yaml"]
+    environment:
+      DEEPINFRA_API_KEY: ${DEEPINFRA_API_KEY:?Variable not set}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?Variable not set}
+    volumes:
+      - ./deploy/litellm.yaml:/app/config.yaml:ro
+
+  adminer:
+    image: adminer
+    depends_on:
+      - db
+    environment:
+      - ADMINER_DESIGN=pepa-linha-dark
+    labels:
+      # Enable Traefik for this service
+      - traefik.enable=true
+      # Route HTTP traffic for the Adminer subdomain
+      - traefik.http.routers.adminer-http.rule=Host(`adminer.${DOMAIN:-localhost}`)
+      - traefik.http.routers.adminer-http.entrypoints=http
+      # Define the port inside of the Docker service to use
+      - traefik.http.services.adminer.loadbalancer.server.port=8080
+
+  backend:
+    image: backend:latest
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+      keycloak:
+        condition: service_started
+    environment:
+      PROJECT_NAME: ${PROJECT_NAME:?Variable not set}
+      OIDC_ISSUER: ${OIDC_ISSUER:?Variable not set}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:?Variable not set}
+      # Fetch signing keys over the compose network; `iss` still uses the public URL.
+      OIDC_JWKS_URL: http://keycloak:8080/realms/resolve/protocol/openid-connect/certs
+      OIDC_ADMIN_ROLE: ${OIDC_ADMIN_ROLE:-resolve-admin}
+      STORAGE_ROOT: /data/files
+      LLM_BASE_URL: http://litellm:4000/v1
+      LLM_API_KEY: ${LITELLM_MASTER_KEY:?Variable not set}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-50}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
+      SENTRY_DSN: ${SENTRY_DSN:-}
+
+    volumes:
+      - app-files:/data/files
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        VITE_OIDC_AUTHORITY: ${OIDC_ISSUER:?Variable not set}
+    labels:
+      # Enable Traefik for this service
+      - traefik.enable=true
+
+      # Define the port inside of the Docker service to use
+      - traefik.http.services.backend.loadbalancer.server.port=8000
+
+      # Route HTTP traffic for this domain
+      - traefik.http.routers.backend-http.rule=Host(`${DOMAIN:-localhost}`)
+      - traefik.http.routers.backend-http.entrypoints=http
+
+  worker:
+    image: backend:latest
+    command: ["procrastinate", "--app=app.workers.queue.queue", "worker", "--queues", "ingestion"]
+    depends_on:
+      db:
+        condition: service_healthy
+      litellm:
+        condition: service_started
+    environment:
+      PROJECT_NAME: ${PROJECT_NAME:?Variable not set}
+      OIDC_ISSUER: ${OIDC_ISSUER:?Variable not set}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:?Variable not set}
+      # Fetch signing keys over the compose network; `iss` still uses the public URL.
+      OIDC_JWKS_URL: http://keycloak:8080/realms/resolve/protocol/openid-connect/certs
+      OIDC_ADMIN_ROLE: ${OIDC_ADMIN_ROLE:-resolve-admin}
+      STORAGE_ROOT: /data/files
+      LLM_BASE_URL: http://litellm:4000/v1
+      LLM_API_KEY: ${LITELLM_MASTER_KEY:?Variable not set}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-50}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
+      SENTRY_DSN: ${SENTRY_DSN:-}
+
+    volumes:
+      - app-files:/data/files
+
+  mcp:
+    image: backend:latest
+    command: ["uvicorn", "app.mcp.server:app", "--host", "0.0.0.0", "--port", "8010"]
+    depends_on:
+      db:
+        condition: service_healthy
+      litellm:
+        condition: service_started
+    environment:
+      PROJECT_NAME: ${PROJECT_NAME:?Variable not set}
+      OIDC_ISSUER: ${OIDC_ISSUER:?Variable not set}
+      OIDC_AUDIENCE: ${OIDC_AUDIENCE:?Variable not set}
+      # Fetch signing keys over the compose network; `iss` still uses the public URL.
+      OIDC_JWKS_URL: http://keycloak:8080/realms/resolve/protocol/openid-connect/certs
+      OIDC_ADMIN_ROLE: ${OIDC_ADMIN_ROLE:-resolve-admin}
+      STORAGE_ROOT: /data/files
+      LLM_BASE_URL: http://litellm:4000/v1
+      LLM_API_KEY: ${LITELLM_MASTER_KEY:?Variable not set}
+      MCP_PUBLIC_URL: ${MCP_PUBLIC_URL:-http://localhost:8010}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-50}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
+      SENTRY_DSN: ${SENTRY_DSN:-}
+
+    volumes:
+      - app-files:/data/files
+
+volumes:
+  app-db-data:
+  app-files:

@@ -1,0 +1,20 @@
+.vscode/*
+!.vscode/extensions.json
+node_modules/
+backend/app/frontend/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+.env
+data/
+eval/.cache/
+eval/reports/*.json
+
+# Local logs
+*.log
+
+# Production secrets (never commit)
+.env.prod
+.env.*.local

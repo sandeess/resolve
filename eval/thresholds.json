@@ -1,0 +1,7 @@
+{
+  "default_recall_5_min": 0.95,
+  "default_mrr_min": 0.8,
+  "pass_rate_min": 0.9,
+  "abstention_recall_min": 0.95,
+  "forbidden_leak_rate_max": 0.0
+}

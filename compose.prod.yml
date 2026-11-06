@@ -1,0 +1,196 @@
+# Production stack for a single VPS: Traefik terminates HTTPS (Let's Encrypt) for
+#   https://app.${DOMAIN}   web app + API
+#   https://auth.${DOMAIN}  Keycloak sign-in
+#   https://mcp.${DOMAIN}   MCP server
+# Nothing but ports 80 and 443 is published. See deploy/PRODUCTION.md.
+#
+#   cp .env.prod.example .env.prod   # then fill it in
+#   python deploy/keycloak/make_prod_realm.py --domain <your domain>
+#   docker compose --env-file .env.prod -f compose.prod.yml up -d --build
+
+x-app-env: &app-env
+  PROJECT_NAME: Resolve
+  OIDC_ISSUER: https://auth.${DOMAIN:?Variable not set}/realms/resolve
+  OIDC_AUDIENCE: resolve-api
+  OIDC_ADMIN_ROLE: resolve-admin
+  # Signing keys are fetched over the private network; `iss` still uses the public URL.
+  OIDC_JWKS_URL: http://keycloak:8080/realms/resolve/protocol/openid-connect/certs
+  FRONTEND_HOST: https://app.${DOMAIN}
+  STORAGE_ROOT: /data/files
+  LLM_BASE_URL: http://litellm:4000/v1
+  LLM_API_KEY: ${LITELLM_MASTER_KEY:?Variable not set}
+  MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-50}
+  DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?Variable not set}@db:5432/app
+
+services:
+  proxy:
+    image: traefik:v3.7
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    command:
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.http.address=:80
+      - --entrypoints.http.http.redirections.entrypoint.to=https
+      - --entrypoints.http.http.redirections.entrypoint.scheme=https
+      - --entrypoints.https.address=:443
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL:?Variable not set}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=http
+      - --accesslog
+      - --log
+
+  db:
+    image: pgvector/pgvector:pg18
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    volumes:
+      - app-db-data:/var/lib/postgresql
+      - ./deploy/postgres/init-keycloak.sql:/docker-entrypoint-initdb.d/init-keycloak.sql:ro
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Variable not set}
+      POSTGRES_DB: app
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    restart: unless-stopped
+    command: ["start", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Variable not set}
+      KC_HOSTNAME: https://auth.${DOMAIN}
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: "true"
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      # Substituted into the imported realm (see deploy/keycloak/make_prod_realm.py).
+      RESOLVE_ADMIN_EMAIL: ${RESOLVE_ADMIN_EMAIL:?Variable not set}
+      RESOLVE_ADMIN_INITIAL_PASSWORD: ${RESOLVE_ADMIN_INITIAL_PASSWORD:?Variable not set}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./deploy/keycloak/realm-prod.json:/opt/keycloak/data/import/realm.json:ro
+      - ./deploy/keycloak/themes/resolve:/opt/keycloak/themes/resolve:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.keycloak.loadbalancer.server.port=8080
+      # The admin console and the master realm are reachable only from the server
+      # itself (use an SSH tunnel); everything else is public.
+      - traefik.http.middlewares.kc-local-only.ipallowlist.sourcerange=127.0.0.1/32
+      - traefik.http.routers.kc-admin.rule=Host(`auth.${DOMAIN}`) && (PathPrefix(`/admin`) || PathPrefix(`/realms/master`))
+      - traefik.http.routers.kc-admin.priority=100
+      - traefik.http.routers.kc-admin.entrypoints=https
+      - traefik.http.routers.kc-admin.tls.certresolver=le
+      - traefik.http.routers.kc-admin.middlewares=kc-local-only
+      - traefik.http.routers.kc-admin.service=keycloak
+      - traefik.http.routers.keycloak.rule=Host(`auth.${DOMAIN}`)
+      - traefik.http.routers.keycloak.entrypoints=https
+      - traefik.http.routers.keycloak.tls.certresolver=le
+      - traefik.http.routers.keycloak.service=keycloak
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    restart: unless-stopped
+    command: ["--config", "/app/config.yaml"]
+    environment:
+      DEEPINFRA_API_KEY: ${DEEPINFRA_API_KEY:?Variable not set}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+    volumes:
+      - ./deploy/litellm.yaml:/app/config.yaml:ro
+
+  # One-shot: applies database migrations and creates the job-queue tables before
+  # the app starts. Safe to re-run (both steps are idempotent).
+  prestart:
+    image: resolve-backend:prod
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        VITE_OIDC_AUTHORITY: https://auth.${DOMAIN}/realms/resolve
+    command: ["bash", "scripts/prestart.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+
+  backend:
+    image: resolve-backend:prod
+    restart: unless-stopped
+    depends_on:
+      prestart:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+        restart: true
+      keycloak:
+        condition: service_started
+    environment:
+      <<: *app-env
+    volumes:
+      - app-files:/data/files
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/utils/health-check/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.backend.loadbalancer.server.port=8000
+      - traefik.http.routers.backend.rule=Host(`app.${DOMAIN}`)
+      - traefik.http.routers.backend.entrypoints=https
+      - traefik.http.routers.backend.tls.certresolver=le
+
+  worker:
+    image: resolve-backend:prod
+    restart: unless-stopped
+    command: ["procrastinate", "--app=app.workers.queue.queue", "worker", "--queues", "ingestion"]
+    depends_on:
+      backend:
+        condition: service_healthy
+      litellm:
+        condition: service_started
+    environment:
+      <<: *app-env
+    volumes:
+      - app-files:/data/files
+
+  mcp:
+    image: resolve-backend:prod
+    restart: unless-stopped
+    command: ["uvicorn", "app.mcp.server:app", "--host", "0.0.0.0", "--port", "8010", "--proxy-headers", "--forwarded-allow-ips=*"]
+    depends_on:
+      backend:
+        condition: service_healthy
+      litellm:
+        condition: service_started
+    environment:
+      <<: *app-env
+      MCP_PUBLIC_URL: https://mcp.${DOMAIN}
+    volumes:
+      - app-files:/data/files
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.mcp.loadbalancer.server.port=8010
+      - traefik.http.routers.mcp.rule=Host(`mcp.${DOMAIN}`)
+      - traefik.http.routers.mcp.entrypoints=https
+      - traefik.http.routers.mcp.tls.certresolver=le
+
+volumes:
+  app-db-data:
+  app-files:
+  letsencrypt:

@@ -1,0 +1,33 @@
+# LiteLLM proxy: the app only ever asks for these aliases. Swap providers or
+# models here without touching application code. Provider: DeepInfra, through its
+# OpenAI-compatible endpoint (covers embeddings and chat with one key).
+model_list:
+  - model_name: embed # 1024-dim; must match EMBEDDING_DIM in backend/app/models.py
+    litellm_params:
+      model: openai/BAAI/bge-m3
+      api_base: https://api.deepinfra.com/v1/openai
+      api_key: os.environ/DEEPINFRA_API_KEY
+  - model_name: chat-fast # default for Ask: ~1.1s median, 95.8% on the eval (see eval/README.md)
+    litellm_params:
+      model: openai/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+      api_base: https://api.deepinfra.com/v1/openai
+      api_key: os.environ/DEEPINFRA_API_KEY
+  - model_name: chat-large # slower but a little more accurate (97.0%); also the fallback
+    litellm_params:
+      model: openai/meta-llama/Llama-3.3-70B-Instruct-Turbo
+      api_base: https://api.deepinfra.com/v1/openai
+      api_key: os.environ/DEEPINFRA_API_KEY
+  - model_name: chat-small # cheap, for classification and triage
+    litellm_params:
+      model: openai/meta-llama/Meta-Llama-3.1-8B-Instruct
+      api_base: https://api.deepinfra.com/v1/openai
+      api_key: os.environ/DEEPINFRA_API_KEY
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+litellm_settings:
+  fallbacks: [{"chat-fast": ["chat-large"]}] # if the fast model errors or times out
+  drop_params: true
+  num_retries: 1 # the app also retries once; keep the product small on a slow link
+  request_timeout: 30

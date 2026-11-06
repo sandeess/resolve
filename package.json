@@ -1,0 +1,13 @@
+{
+  "name": "resolve",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run --workspace frontend dev",
+    "lint": "npm run --workspace frontend lint",
+    "test": "npm run --workspace frontend test",
+    "test:ui": "npm run --workspace frontend test:ui"
+  }
+}

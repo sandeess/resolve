@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Settings are read at import time; these satisfy them without real services.
+  OIDC_ISSUER: http://idp.test/realms/resolve
+  OIDC_AUDIENCE: resolve-api
+  DATABASE_URL: postgresql://postgres:ci@localhost:5432/app
+
+jobs:
+  backend:
+    name: Backend (lint, types, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --frozen
+      - run: uv run ruff check app tests scripts ../eval
+      - run: uv run ruff format --check app tests scripts ../eval
+      - run: uv run mypy app tests
+      # Integration tests start pgvector containers (Docker is available on the runner)
+      # and run every API request under row-level security.
+      - run: uv run pytest tests -q
+
+  frontend:
+    name: Frontend (lint, types, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+        working-directory: .
+      - run: npx biome check --no-errors-on-unmatched --files-ignore-unknown=true ./
+      - run: npx tsc -p tsconfig.build.json
+      - run: npx vite build
+        env:
+          VITE_OIDC_AUTHORITY: http://idp.test/realms/resolve
+          VITE_OIDC_CLIENT_ID: resolve-web
+
+  dependencies:
+    name: Licences and vulnerabilities
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Python licence gate (no GPL, AGPL or SSPL in shipped packages)
+        working-directory: backend
+        run: |
+          uv sync --frozen
+          uv export --no-dev --no-hashes --no-emit-project > "$RUNNER_TEMP/prod-requirements.txt"
+          uv run python scripts/check_licenses.py "$RUNNER_TEMP/prod-requirements.txt"
+      - name: Python vulnerabilities
+        working-directory: backend
+        run: uv run pip-audit --skip-editable
+      - run: npm ci
+      - name: npm licence gate
+        run: python3 scripts/check_npm_licenses.py
+      - name: npm vulnerabilities (production, high and above)
+        run: npm audit --omit=dev --audit-level=high
+
+  docker:
+    name: Image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: >
+          docker build -f backend/Dockerfile
+          --build-arg VITE_OIDC_AUTHORITY=http://localhost:8081/realms/resolve
+          -t resolve-backend .

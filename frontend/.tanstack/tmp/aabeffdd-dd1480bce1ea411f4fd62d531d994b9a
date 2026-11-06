@@ -1,0 +1,323 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { ArrowLeft } from "lucide-react"
+import { useState } from "react"
+
+import {
+  JournalsService,
+  type TicketDetail,
+  type TicketPriority,
+  TicketsService,
+} from "@/client"
+import { PriorityBadge, StatusBadge } from "@/components/Tickets/badges"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { LoadingButton } from "@/components/ui/loading-button"
+import { Skeleton } from "@/components/ui/skeleton"
+import useAuth from "@/hooks/useAuth"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
+
+export const Route = createFileRoute("/_layout/journals/$journalId/tickets/$ticketId")({
+  component: TicketPage,
+  head: () => ({ meta: [{ title: "Ticket - Resolve" }] }),
+})
+
+const PRIORITIES: TicketPriority[] = ["low", "normal", "high"]
+
+function TicketPage() {
+  const { ticketId } = Route.useParams()
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
+  const [comment, setComment] = useState("")
+  const [answer, setAnswer] = useState("")
+
+  const { data: ticket } = useQuery({
+    queryKey: ["ticket", ticketId],
+    queryFn: async () =>
+      (await TicketsService.readTicket({ path: { ticket_id: ticketId } })).data,
+  })
+  const { data: journal } = useQuery({
+    queryKey: ["journal", ticket?.journal_id],
+    queryFn: async () =>
+      (
+        await JournalsService.readJournal({
+          path: { journal_id: ticket?.journal_id ?? "" },
+        })
+      ).data,
+    enabled: Boolean(ticket),
+  })
+
+  // Every action returns the updated ticket: cache it and refresh the lists.
+  const refresh = (updated: TicketDetail, message?: string) => {
+    queryClient.setQueryData(["ticket", ticketId], updated)
+    void queryClient.invalidateQueries({ queryKey: ["tickets"] })
+    if (message) showSuccessToast(message)
+  }
+
+  const addComment = useMutation({
+    mutationFn: async () =>
+      (
+        await TicketsService.addMessage({
+          path: { ticket_id: ticketId },
+          body: { body: comment },
+        })
+      ).data,
+    onSuccess: (updated) => {
+      setComment("")
+      refresh(updated)
+    },
+    onError: handleError.bind(showErrorToast),
+  })
+  const update = useMutation({
+    mutationFn: async (body: {
+      priority?: TicketPriority
+      assign_to_me?: boolean
+      unassign?: boolean
+    }) =>
+      (
+        await TicketsService.updateTicket({
+          path: { ticket_id: ticketId },
+          body,
+        })
+      ).data,
+    onSuccess: (updated) => refresh(updated),
+    onError: handleError.bind(showErrorToast),
+  })
+  const resolve = useMutation({
+    mutationFn: async (approve: boolean) =>
+      (
+        await TicketsService.resolveTicket({
+          path: { ticket_id: ticketId },
+          body: { answer, approve },
+        })
+      ).data,
+    onSuccess: (updated) => {
+      setAnswer("")
+      refresh(
+        updated,
+        updated.status === "closed"
+          ? "Answer approved and now searchable"
+          : "Answer saved, awaiting approval",
+      )
+    },
+    onError: handleError.bind(showErrorToast),
+  })
+  const approve = useMutation({
+    mutationFn: async () =>
+      (await TicketsService.approveTicket({ path: { ticket_id: ticketId } }))
+        .data,
+    onSuccess: (updated) => refresh(updated, "Approved and now searchable"),
+    onError: handleError.bind(showErrorToast),
+  })
+  const reopen = useMutation({
+    mutationFn: async () =>
+      (await TicketsService.reopenTicket({ path: { ticket_id: ticketId } }))
+        .data,
+    onSuccess: (updated) =>
+      refresh(updated, "Reopened; answer withdrawn from search"),
+    onError: handleError.bind(showErrorToast),
+  })
+
+  if (!ticket || !journal) return <Skeleton className="h-40 w-full" />
+
+  // Mirrors backend/app/domain/policy.py; the API remains the authority.
+  const isAdmin = Boolean(user?.is_admin)
+  const canApprove = isAdmin || journal.role === "lead"
+  const canWork = canApprove || journal.role === "assistant"
+  const isAuthor = ticket.created_by_email === user?.email
+  const canComment = canWork || isAuthor
+
+  return (
+    <div className="flex flex-col gap-6">
+      <Link
+        to="/journals/$journalId"
+        params={{ journalId: ticket.journal_id }}
+        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" /> {journal.code}
+      </Link>
+
+      <div className="flex flex-col gap-2">
+        <h1 className="flex flex-wrap items-center gap-3 text-2xl font-semibold">
+          <span className="text-muted-foreground">T-{ticket.number}</span>
+          {ticket.title}
+        </h1>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <StatusBadge status={ticket.status} />
+          <PriorityBadge priority={ticket.priority} />
+          {ticket.source === "ask_escalation" && (
+            <Badge variant="outline">from Ask</Badge>
+          )}
+          <span>raised by {ticket.created_by_email}</span>
+          <span>assigned to {ticket.assignee_email ?? "nobody"}</span>
+        </div>
+        {canWork && (
+          <div className="flex flex-wrap items-center gap-2">
+            {ticket.assignee_email === user?.email ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => update.mutate({ unassign: true })}
+              >
+                Unassign me
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => update.mutate({ assign_to_me: true })}
+              >
+                Assign to me
+              </Button>
+            )}
+            <select
+              aria-label="Priority"
+              className="h-8 rounded-md border bg-background px-2 text-sm"
+              value={ticket.priority}
+              onChange={(event) =>
+                update.mutate({
+                  priority: event.target.value as TicketPriority,
+                })
+              }
+            >
+              {PRIORITIES.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {ticket.description && (
+        <p className="whitespace-pre-wrap rounded-lg border p-4">
+          {ticket.description}
+        </p>
+      )}
+
+      {ticket.resolution && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              Answer
+              {ticket.status === "closed" ? (
+                <Badge>searchable in Ask</Badge>
+              ) : (
+                <Badge variant="secondary">not searchable until approved</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <p className="whitespace-pre-wrap">{ticket.resolution.answer}</p>
+            <p className="text-xs text-muted-foreground">
+              Written by {ticket.resolution.resolved_by_email}
+              {ticket.resolution.approved_by_email &&
+                `, approved by ${ticket.resolution.approved_by_email}`}
+            </p>
+            <div className="flex gap-2">
+              {ticket.status === "resolved" && canApprove && (
+                <LoadingButton
+                  loading={approve.isPending}
+                  onClick={() => approve.mutate()}
+                >
+                  Approve and publish to Ask
+                </LoadingButton>
+              )}
+              {canWork && (
+                <Button
+                  variant="outline"
+                  disabled={reopen.isPending}
+                  onClick={() => reopen.mutate()}
+                >
+                  Reopen
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {canWork && ticket.status !== "closed" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {ticket.resolution ? "Edit answer" : "Write the answer"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <textarea
+              className="min-h-28 rounded-md border bg-background px-3 py-2 text-sm"
+              placeholder="The reusable answer. Once approved, Ask can cite it."
+              value={answer}
+              onChange={(event) => setAnswer(event.target.value)}
+              aria-label="Answer"
+            />
+            <div className="flex flex-wrap gap-2">
+              <LoadingButton
+                variant="outline"
+                loading={resolve.isPending && resolve.variables === false}
+                disabled={answer.trim().length < 3 || resolve.isPending}
+                onClick={() => resolve.mutate(false)}
+              >
+                Save for approval
+              </LoadingButton>
+              {canApprove && (
+                <LoadingButton
+                  loading={resolve.isPending && resolve.variables === true}
+                  disabled={answer.trim().length < 3 || resolve.isPending}
+                  onClick={() => resolve.mutate(true)}
+                >
+                  Save and approve
+                </LoadingButton>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">Conversation</h2>
+        {ticket.messages.length === 0 && (
+          <p className="text-sm text-muted-foreground">No messages yet.</p>
+        )}
+        {ticket.messages.map((message) => (
+          <div key={message.id} className="rounded-lg border p-3">
+            <p className="text-xs text-muted-foreground">
+              {message.author_email} -{" "}
+              {new Date(message.created_at).toLocaleString()}
+            </p>
+            <p className="whitespace-pre-wrap">{message.body}</p>
+          </div>
+        ))}
+        {canComment && (
+          <form
+            className="flex items-center gap-2"
+            onSubmit={(event) => {
+              event.preventDefault()
+              if (comment.trim()) addComment.mutate()
+            }}
+          >
+            <Input
+              placeholder="Add a comment"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              aria-label="Comment"
+            />
+            <LoadingButton
+              type="submit"
+              loading={addComment.isPending}
+              disabled={!comment.trim()}
+            >
+              Send
+            </LoadingButton>
+          </form>
+        )}
+      </section>
+    </div>
+  )
+}

@@ -1,0 +1,67 @@
+/* Resolve login: the app's Google-style palette on top of Keycloak's v2 theme. */
+:root,
+.pf-v5-theme-dark {
+  --pf-v5-global--primary-color--100: #1a73e8;
+  --pf-v5-global--primary-color--200: #1765cc;
+  --pf-v5-global--link--Color: #1a73e8;
+  --pf-v5-global--link--Color--hover: #1765cc;
+  --pf-v5-global--FontFamily--text: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+  --pf-v5-global--FontFamily--heading: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+}
+
+html.login-pf body,
+.pf-v5-c-login {
+  background: #f8f9fa;
+  background-image: none;
+}
+
+.pf-v5-c-login__main {
+  border: 1px solid #dadce0;
+  border-radius: 28px;
+  box-shadow: 0 1px 3px rgb(60 64 67 / 0.3), 0 4px 8px 3px rgb(60 64 67 / 0.15);
+  overflow: hidden;
+}
+
+.pf-v5-c-login__main-header .pf-v5-c-title {
+  font-weight: 500;
+}
+
+.pf-v5-c-form-control {
+  border-radius: 8px;
+}
+
+.pf-v5-c-button.pf-m-primary {
+  border-radius: 999px;
+  min-height: 44px;
+  font-weight: 500;
+  background-color: #1a73e8;
+}
+
+.pf-v5-c-button.pf-m-primary:hover {
+  background-color: #1765cc;
+}
+
+#kc-header-wrapper {
+  font-size: 0;
+}
+
+#kc-header-wrapper::before {
+  content: "Resolve";
+  font-size: 28px;
+  font-weight: 500;
+  color: #1a73e8;
+}
+
+@media (prefers-color-scheme: dark) {
+  html.login-pf body,
+  .pf-v5-c-login {
+    background: #202124;
+  }
+  .pf-v5-c-login__main {
+    border-color: #3c4043;
+    background: #292a2d;
+  }
+  #kc-header-wrapper::before {
+    color: #8ab4f8;
+  }
+}
