@@ -81,13 +81,27 @@ When a request arrives: create their account in Keycloak (below), then add their
 
 ## 6. Add people and journals
 
-Sign in as the administrator and create a journal. To add users, use the Keycloak admin console through an SSH tunnel (it is not public):
+Sign in as the administrator and create a journal on the home page. To give someone access:
+
+1. **Create their account** on the server (Keycloak is not exposed publicly, so this goes through a script):
+   ```bash
+   cd /opt/resolve && sudo bash deploy/add-user.sh someone@example.com          # a normal user
+   cd /opt/resolve && sudo bash deploy/add-user.sh boss@example.com --admin     # an administrator
+   ```
+   It prints a temporary password. The person must choose their own at first sign-in. Send the details privately.
+2. **Add their email to a journal** on the **People** page in the app, with a role (lead, assistant or viewer). You can do this before they have signed in: they get access the first time they do.
+
+Over MCP, even an administrator only sees journals they are a member of, so add yourself to a journal too if you want to use Claude with it.
+
+To reset someone's password (this also makes them choose a new one):
 
 ```bash
-ssh -L 8081:localhost:8080 you@server   # then open http://localhost:8081/admin
+cd /opt/resolve
+C="docker compose --env-file .env.prod -f compose.prod.yml"
+PW=$(grep '^KEYCLOAK_ADMIN_PASSWORD=' .env.prod | cut -d= -f2-)
+$C exec -T keycloak /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user admin --password "$PW"
+$C exec -T keycloak /opt/keycloak/bin/kcadm.sh set-password -r resolve --username someone@example.com --new-password 'A-temporary-Password-1' --temporary
 ```
-
-Alternatively `docker compose ... exec keycloak` into the container. Make a user in realm **resolve**, then add them to a journal in the app. Give someone the `resolve-admin` realm role only if they should administer everything.
 
 ## 7. Connect Claude Code
 
